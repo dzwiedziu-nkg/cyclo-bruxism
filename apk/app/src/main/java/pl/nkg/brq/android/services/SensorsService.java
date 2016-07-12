@@ -28,14 +28,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
 import pl.nkg.brq.android.Utils;
 import pl.nkg.brq.android.sensors.Noise;
 
-public class SensorsService extends Service implements SensorEventListener {
+public class SensorsService extends Service implements SensorEventListener, LocationListener {
 
     private static final String TAG = SensorsService.class.getSimpleName();
 
@@ -43,6 +47,7 @@ public class SensorsService extends Service implements SensorEventListener {
     private Sensor senAccelerometer;
     private final IBinder mBinder = new LocalBinder();
     private Noise mNoise;
+    private LocationManager mLocationManager;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -57,6 +62,14 @@ public class SensorsService extends Service implements SensorEventListener {
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         mNoise = new Noise();
+
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        try {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        } catch (SecurityException e) {
+            Log.e(TAG, "GPS permission not granted", e);
+        }
     }
 
     @Override
@@ -88,11 +101,39 @@ public class SensorsService extends Service implements SensorEventListener {
         linear_acceleration[2] = event.values[2] - gravity[2];
 
         double mag = Utils.pitagoras(linear_acceleration);
-        Log.d(TAG, mag + " m/s²; " + mNoise.getNoise() + "dB");
+
+        String loc = "";
+        if (mLocation != null) {
+            loc = mLocation.getLatitude() + " lat; " + mLocation.getLongitude() + " lon; " + mLocation.getAltitude() + " alt; " + mLocation.getAccuracy() + " acc; " + mLocation.getSpeed() + "m/s";
+        }
+
+        Log.d(TAG, mag + " m/s²; " + mNoise.getNoise() + "dB " + loc);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
+    }
+
+    private Location mLocation;
+
+    @Override
+    public void onLocationChanged(Location location) {
+        mLocation = location;
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 
     public class LocalBinder extends Binder {
