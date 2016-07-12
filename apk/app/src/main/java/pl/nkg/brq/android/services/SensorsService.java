@@ -33,6 +33,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import pl.nkg.brq.android.Utils;
+import pl.nkg.brq.android.sensors.Noise;
 
 public class SensorsService extends Service implements SensorEventListener {
 
@@ -41,7 +42,7 @@ public class SensorsService extends Service implements SensorEventListener {
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
     private final IBinder mBinder = new LocalBinder();
-
+    private Noise mNoise;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -55,10 +56,12 @@ public class SensorsService extends Service implements SensorEventListener {
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mNoise = new Noise();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        mNoise.startRecorder();
         return START_STICKY;
     }
 
@@ -66,6 +69,7 @@ public class SensorsService extends Service implements SensorEventListener {
     public void onDestroy() {
         super.onDestroy();
         senSensorManager.unregisterListener(this);
+        mNoise.stopRecorder();
     }
 
     float gravity[] = {0, 0, 0};
@@ -84,12 +88,11 @@ public class SensorsService extends Service implements SensorEventListener {
         linear_acceleration[2] = event.values[2] - gravity[2];
 
         double mag = Utils.pitagoras(linear_acceleration);
-        Log.d(TAG, mag + " m/s²");
+        Log.d(TAG, mag + " m/s²; " + mNoise.getNoise() + "dB");
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
-        Log.d(TAG, sensor.toString() + "; " + i);
     }
 
     public class LocalBinder extends Binder {

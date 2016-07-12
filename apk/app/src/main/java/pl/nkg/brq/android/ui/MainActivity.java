@@ -21,9 +21,15 @@
 
 package pl.nkg.brq.android.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -39,6 +45,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Prompt for permissions
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.w("BleActivity", "Location access not granted!");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        MY_PERMISSION_RESPONSE);
+            }
+        }
+
         mButtonOn = (Button) findViewById(R.id.button_on);
         mButtonOn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,4 +73,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private static final int MY_PERMISSION_RESPONSE = 29;
+
 }
