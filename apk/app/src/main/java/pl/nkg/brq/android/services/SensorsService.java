@@ -33,8 +33,15 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import pl.nkg.brq.android.Utils;
 import pl.nkg.brq.android.sensors.Noise;
@@ -49,6 +56,9 @@ public class SensorsService extends Service implements SensorEventListener, Loca
     private Noise mNoise;
     private LocationManager mLocationManager;
 
+    private LinkedBlockingQueue<Record> mQueue;
+    private boolean mFinish;
+
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -57,6 +67,8 @@ public class SensorsService extends Service implements SensorEventListener, Loca
     @Override
     public void onCreate() {
         super.onCreate();
+
+        mQueue = new LinkedBlockingQueue<>();
 
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -70,11 +82,57 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         } catch (SecurityException e) {
             Log.e(TAG, "GPS permission not granted", e);
         }
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         mNoise.startRecorder();
+        mFinish = false;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!mFinish) {
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (mQueue.size() == 0) {
+                        continue;
+                    }
+
+                    File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/brq.csv");
+
+                    try {
+                        FileOutputStream fOut = new FileOutputStream(file, true);
+                        OutputStreamWriter osw = new OutputStreamWriter(fOut);
+                        int count = mQueue.size();
+                        while (mQueue.size() > 0) {
+                            Record record = mQueue.poll();
+                            String rec = record.timestamp + "\t" +
+                                    record.lon + "\t" +
+                                    record.lat + "\t" +
+                                    record.alt + "\t" +
+                                    record.acc + "\t" +
+                                    record.speed + "\t" +
+                                    record.db + "\t" +
+                                    record.mag;
+                            osw.write(rec + "\n");
+                            Log.d(TAG, rec);
+                        }
+                        osw.flush();
+                        osw.close();
+                        //SensorsService.this.getApplicationContext().
+                        //Toast.makeText(SensorsService.this, "Flushed: " + count, Toast.LENGTH_SHORT).show();
+                    } catch (java.io.IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+        Toast.makeText(SensorsService.this, "Service start", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 
@@ -83,6 +141,8 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         super.onDestroy();
         senSensorManager.unregisterListener(this);
         mNoise.stopRecorder();
+        mFinish = true;
+        Toast.makeText(SensorsService.this, "Service destroyed", Toast.LENGTH_SHORT).show();
     }
 
     float gravity[] = {0, 0, 0};
@@ -102,12 +162,24 @@ public class SensorsService extends Service implements SensorEventListener, Loca
 
         double mag = Utils.pitagoras(linear_acceleration);
 
-        String loc = "";
+        Record record = new Record();
+        //String loc = "";
         if (mLocation != null) {
-            loc = mLocation.getLatitude() + " lat; " + mLocation.getLongitude() + " lon; " + mLocation.getAltitude() + " alt; " + mLocation.getAccuracy() + " acc; " + mLocation.getSpeed() + "m/s";
+            //loc = mLocation.getLatitude() + " lat; " + mLocation.getLongitude() + " lon; " + mLocation.getAltitude() + " alt; " + mLocation.getAccuracy() + " acc; " + mLocation.getSpeed() + "m/s";
+            record.acc = mLocation.getAccuracy();
+            record.lon = mLocation.getLongitude();
+            record.lat = mLocation.getLatitude();
+            record.alt = mLocation.getAltitude();
+            record.speed = mLocation.getSpeed();
         }
 
-        Log.d(TAG, mag + " m/s²; " + mNoise.getNoise() + "dB " + loc);
+        //Log.d(TAG, mag + " m/s²; " + mNoise.getNoise() + "dB " + loc);
+        record.mag = mag;
+        record.db = mNoise.getNoise();
+
+        if (mQueue != null) {
+            mQueue.add(record);
+        }
     }
 
     @Override
@@ -139,6 +211,21 @@ public class SensorsService extends Service implements SensorEventListener, Loca
     public class LocalBinder extends Binder {
         public SensorsService getService() {
             return SensorsService.this;
+        }
+    }
+
+    private class Record {
+        public double mag;
+        public double db;
+        public double lon;
+        public double lat;
+        public double alt;
+        public double acc;
+        public double speed;
+        public long timestamp;
+
+        public Record() {
+            timestamp = System.currentTimeMillis();
         }
     }
 }
