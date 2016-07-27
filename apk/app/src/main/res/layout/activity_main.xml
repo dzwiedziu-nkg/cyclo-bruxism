@@ -59,4 +59,11 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/distanceTextView" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textColor="#ff0000"
+        android:id="@+id/warningTextView" />
+
 </LinearLayout>

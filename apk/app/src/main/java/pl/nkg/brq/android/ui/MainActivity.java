@@ -34,6 +34,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -63,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
     TextView mNoiseTextView;
     @Bind(R.id.distanceTextView)
     TextView mDistanceTextView;
+    @Bind(R.id.warningTextView)
+    TextView mWarningTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,5 +128,13 @@ public class MainActivity extends AppCompatActivity {
         mShakeTextView.setText((int) (record.shake * 100) / 100.0 + " m/s²");
         mNoiseTextView.setText((int) record.soundNoise + " db");
         mDistanceTextView.setText((double) record.distance / 100.0 + " m");
+
+        if (record.distance < 120 && record.distance != 0) {
+            mWarningTextView.setVisibility(View.VISIBLE);
+            mWarningTextView.setText((double) record.distance / 100.0 + " m");
+            mWarningTextView.setTextSize(Math.min(5000 / record.distance, 100));
+        } else {
+            mWarningTextView.setVisibility(View.GONE);
+        }
     }
 }
