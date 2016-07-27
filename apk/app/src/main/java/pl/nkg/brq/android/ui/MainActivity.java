@@ -21,6 +21,10 @@
 
 package pl.nkg.brq.android.ui;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,18 +38,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import pl.nkg.brq.android.R;
+import pl.nkg.brq.android.events.SensorsRecord;
+import pl.nkg.brq.android.events.SensorsServiceState;
 import pl.nkg.brq.android.services.SensorsService;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int MY_PERMISSION_RESPONSE = 29;
+
     private Button mButtonOn;
     private Button mButtonOff;
     private TextView mTextView;
-    private Timer myTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,38 +92,27 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mTextView = (TextView) findViewById(R.id.textView);
-
-        myTimer = new Timer();
-
-    }
-
-    private void TimerMethod() {
-        mTextView.setText(SensorsService.distance + " cm");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        myTimer.cancel();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        myTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                MainActivity.this.runOnUiThread(new TimerTask() {
-                    @Override
-                    public void run() {
-                        TimerMethod();
-                    }
-                });
-            }
-
-        }, 0, 200);
+        EventBus.getDefault().register(this);
     }
 
-    private static final int MY_PERMISSION_RESPONSE = 29;
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(SensorsServiceState state) {
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(SensorsRecord record) {
+        mTextView.setText(record.distance + "cm");
+    }
 }

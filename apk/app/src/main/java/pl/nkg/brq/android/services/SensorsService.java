@@ -21,6 +21,8 @@
 
 package pl.nkg.brq.android.services;
 
+import org.greenrobot.eventbus.EventBus;
+
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -53,6 +55,8 @@ import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import pl.nkg.brq.android.Utils;
+import pl.nkg.brq.android.events.SensorsRecord;
+import pl.nkg.brq.android.events.SensorsServiceState;
 import pl.nkg.brq.android.sensors.Noise;
 
 public class SensorsService extends Service implements SensorEventListener, LocationListener {
@@ -65,28 +69,31 @@ public class SensorsService extends Service implements SensorEventListener, Loca
     private Noise mNoise;
     private LocationManager mLocationManager;
 
-    private LinkedBlockingQueue<Record> mQueue;
+    private LinkedBlockingQueue<SensorsRecord> mQueue;
     private boolean mFinish;
-    public static int distance;
+    private int distance;
 
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
-    private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
-    public static  int mConnectionState = BluetoothProfile.STATE_DISCONNECTED;
 
-    private String address = "98:4F:EE:0F:90:DC";
-    private UUID service = UUID.fromString("181C");
-    private UUID characteristic = UUID.fromString("2A19");
+    private SensorsServiceState mState = new SensorsServiceState();
+
+    private UUID service = UUID.fromString("0000181c-0000-1000-8000-00805f9b34fb");
+    private UUID characteristic = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
+    private UUID descriptor = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            mState.connectionState = newState;
+            emitChangeStateEvent();
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                mConnectionState = BluetoothProfile.STATE_CONNECTED;
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                mConnectionState = BluetoothProfile.STATE_DISCONNECTED;
+                if (mState.running) {
+                    connect();
+                }
             }
         }
 
@@ -94,6 +101,9 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 BluetoothGattCharacteristic chr = mBluetoothGatt.getService(service).getCharacteristic(characteristic);
+                BluetoothGattDescriptor dsc = chr.getDescriptor(descriptor);
+                dsc.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+                gatt.writeDescriptor(dsc);
                 mBluetoothGatt.setCharacteristicNotification(chr, true);
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
@@ -136,25 +146,17 @@ public class SensorsService extends Service implements SensorEventListener, Loca
 
     };
 
+    private void emitChangeStateEvent() {
+        EventBus.getDefault().post(mState.clone());
+    }
+
     public boolean connect() {
-        if (mBluetoothAdapter == null || address == null) {
+        if (mBluetoothAdapter == null || mState.address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
 
-        // Previously connected device.  Try to reconnect.
-        if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
-                && mBluetoothGatt != null) {
-            Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
-            if (mBluetoothGatt.connect()) {
-                mConnectionState = BluetoothGatt.STATE_CONNECTING;
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mState.address);
         if (device == null) {
             Log.w(TAG, "Device not found.  Unable to connect.");
             return false;
@@ -163,8 +165,8 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         // parameter to false.
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");
-        mBluetoothDeviceAddress = address;
-        mConnectionState = BluetoothGatt.STATE_CONNECTING;
+        mState.connectionState = BluetoothGatt.STATE_CONNECTING;
+        emitChangeStateEvent();
         return true;
     }
 
@@ -176,6 +178,8 @@ public class SensorsService extends Service implements SensorEventListener, Loca
     @Override
     public void onCreate() {
         super.onCreate();
+
+        mState.address = "98:4F:EE:0F:90:DC";
 
         mQueue = new LinkedBlockingQueue<>();
 
@@ -192,10 +196,25 @@ public class SensorsService extends Service implements SensorEventListener, Loca
             Log.e(TAG, "GPS permission not granted", e);
         }
 
+        if (mBluetoothManager == null) {
+            mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            if (mBluetoothManager == null) {
+                Log.e(TAG, "Unable to initialize BluetoothManager.");
+                return;
+            }
+        }
+
+        mBluetoothAdapter = mBluetoothManager.getAdapter();
+        if (mBluetoothAdapter == null) {
+            Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
+            return;
+        }
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        mState.running = true;
         connect();
         mNoise.startRecorder();
         mFinish = false;
@@ -220,15 +239,15 @@ public class SensorsService extends Service implements SensorEventListener, Loca
                         OutputStreamWriter osw = new OutputStreamWriter(fOut);
                         int count = mQueue.size();
                         while (mQueue.size() > 0) {
-                            Record record = mQueue.poll();
+                            SensorsRecord record = mQueue.poll();
                             String rec = record.timestamp + "\t" +
-                                    record.lon + "\t" +
-                                    record.lat + "\t" +
-                                    record.alt + "\t" +
-                                    record.acc + "\t" +
+                                    record.longitude + "\t" +
+                                    record.latitude + "\t" +
+                                    record.altitude + "\t" +
+                                    record.accuracy + "\t" +
                                     record.speed + "\t" +
-                                    record.db + "\t" +
-                                    record.mag + "\t" +
+                                    record.soundNoise + "\t" +
+                                    record.shake + "\t" +
                                     record.distance;
                             osw.write(rec + "\n");
                             Log.d(TAG, rec);
@@ -258,6 +277,7 @@ public class SensorsService extends Service implements SensorEventListener, Loca
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
+        mState.running = false;
         mBluetoothGatt.disconnect();
     }
 
@@ -278,27 +298,28 @@ public class SensorsService extends Service implements SensorEventListener, Loca
 
         double mag = Utils.pitagoras(linear_acceleration);
 
-        Record record = new Record();
+        SensorsRecord record = new SensorsRecord();
         //String loc = "";
         if (mLocation != null) {
             //loc = mLocation.getLatitude() + " lat; " + mLocation.getLongitude() + " lon; " + mLocation.getAltitude() + " alt; " + mLocation.getAccuracy() + " acc; " + mLocation.getSpeed() + "m/s";
-            record.acc = mLocation.getAccuracy();
-            record.lon = mLocation.getLongitude();
-            record.lat = mLocation.getLatitude();
-            record.alt = mLocation.getAltitude();
+            record.accuracy = mLocation.getAccuracy();
+            record.longitude = mLocation.getLongitude();
+            record.latitude = mLocation.getLatitude();
+            record.altitude = mLocation.getAltitude();
             record.speed = mLocation.getSpeed();
         }
 
         //Log.d(TAG, mag + " m/s²; " + mNoise.getNoise() + "dB " + loc);
-        record.mag = mag;
-        record.db = mNoise.getNoise();
+        record.shake = mag;
+        record.soundNoise = mNoise.getNoise();
         record.distance = distance;
 
         if (mQueue != null) {
             mQueue.add(record);
+            EventBus.getDefault().post(record);
         }
 
-        if (mConnectionState != BluetoothGatt.STATE_CONNECTED || mConnectionState != BluetoothGatt.STATE_CONNECTING) {
+        if (mState.connectionState != BluetoothGatt.STATE_CONNECTED && mState.connectionState != BluetoothGatt.STATE_CONNECTING) {
             connect();
         }
     }
@@ -332,22 +353,6 @@ public class SensorsService extends Service implements SensorEventListener, Loca
     public class LocalBinder extends Binder {
         public SensorsService getService() {
             return SensorsService.this;
-        }
-    }
-
-    private class Record {
-        public double mag;
-        public double db;
-        public double lon;
-        public double lat;
-        public double alt;
-        public double acc;
-        public double speed;
-        public long timestamp;
-        public double distance;
-
-        public Record() {
-            timestamp = System.currentTimeMillis();
         }
     }
 }
