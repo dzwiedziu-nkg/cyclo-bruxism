@@ -32,6 +32,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.services.SensorsService;
@@ -40,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mButtonOn;
     private Button mButtonOff;
+    private TextView mTextView;
+    private Timer myTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +56,17 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                     != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
                     ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                     ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 Log.w("BleActivity", "Location access not granted!");
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[]{Manifest.permission.RECORD_AUDIO,
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.BLUETOOTH_ADMIN,
+                                Manifest.permission.BLUETOOTH},
                         MY_PERMISSION_RESPONSE);
             }
         }
@@ -74,6 +86,38 @@ public class MainActivity extends AppCompatActivity {
                 stopService(new Intent(MainActivity.this, SensorsService.class));
             }
         });
+
+        mTextView = (TextView) findViewById(R.id.textView);
+
+        myTimer = new Timer();
+
+    }
+
+    private void TimerMethod() {
+        mTextView.setText(SensorsService.distance + " cm");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        myTimer.cancel();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        myTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                MainActivity.this.runOnUiThread(new TimerTask() {
+                    @Override
+                    public void run() {
+                        TimerMethod();
+                    }
+                });
+            }
+
+        }, 0, 200);
     }
 
     private static final int MY_PERMISSION_RESPONSE = 29;

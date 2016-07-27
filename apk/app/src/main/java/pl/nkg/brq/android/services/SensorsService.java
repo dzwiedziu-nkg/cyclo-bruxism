@@ -22,6 +22,14 @@
 package pl.nkg.brq.android.services;
 
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -41,6 +49,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import pl.nkg.brq.android.Utils;
@@ -58,6 +67,106 @@ public class SensorsService extends Service implements SensorEventListener, Loca
 
     private LinkedBlockingQueue<Record> mQueue;
     private boolean mFinish;
+    public static int distance;
+
+    private BluetoothManager mBluetoothManager;
+    private BluetoothAdapter mBluetoothAdapter;
+    private String mBluetoothDeviceAddress;
+    private BluetoothGatt mBluetoothGatt;
+    public static  int mConnectionState = BluetoothProfile.STATE_DISCONNECTED;
+
+    private String address = "98:4F:EE:0F:90:DC";
+    private UUID service = UUID.fromString("181C");
+    private UUID characteristic = UUID.fromString("2A19");
+
+    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                mConnectionState = BluetoothProfile.STATE_CONNECTED;
+                gatt.discoverServices();
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                mConnectionState = BluetoothProfile.STATE_DISCONNECTED;
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                BluetoothGattCharacteristic chr = mBluetoothGatt.getService(service).getCharacteristic(characteristic);
+                mBluetoothGatt.setCharacteristicNotification(chr, true);
+            } else {
+                Log.w(TAG, "onServicesDiscovered received: " + status);
+            }
+        }
+
+/*        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt,
+                                         BluetoothGattCharacteristic characteristic,
+                                         int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                logData("onCharacteristicRead", -1, characteristic.getValue(), false, 0, characteristic.getUuid());
+                mListener.onCommunicationEvent(CommunicationEventType.characteristicRead, characteristic.getValue(), characteristic.getService().getUuid(), characteristic.getUuid(), null);
+            }
+        }*/
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt,
+                                            BluetoothGattCharacteristic characteristic) {
+            distance = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 0);
+            //logData("onCharacteristicChanged", -1, characteristic.getValue(), false, 0, characteristic.getUuid());
+            //mListener.onCommunicationEvent(CommunicationEventType.characteristicChanged, characteristic.getValue(), characteristic.getService().getUuid(), characteristic.getUuid(), null);
+        }
+/*
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                logData("onCharacteristicWrite", 1, characteristic.getValue(), false, 0, characteristic.getUuid());
+                mListener.onCommunicationEvent(CommunicationEventType.characteristicWrite, characteristic.getValue(), characteristic.getService().getUuid(), characteristic.getUuid(), null);
+            }
+        }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                logData("onDescriptorWrite", 1, descriptor.getValue(), false, 0, descriptor.getUuid());
+                mListener.onCommunicationEvent(CommunicationEventType.descriptorWrite, descriptor.getValue(), descriptor.getCharacteristic().getService().getUuid(), descriptor.getCharacteristic().getUuid(), descriptor.getUuid());
+            }
+        }*/
+
+    };
+
+    public boolean connect() {
+        if (mBluetoothAdapter == null || address == null) {
+            Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+            return false;
+        }
+
+        // Previously connected device.  Try to reconnect.
+        if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
+                && mBluetoothGatt != null) {
+            Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
+            if (mBluetoothGatt.connect()) {
+                mConnectionState = BluetoothGatt.STATE_CONNECTING;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        if (device == null) {
+            Log.w(TAG, "Device not found.  Unable to connect.");
+            return false;
+        }
+        // We want to directly connect to the device, so we are setting the autoConnect
+        // parameter to false.
+        mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        Log.d(TAG, "Trying to create a new connection.");
+        mBluetoothDeviceAddress = address;
+        mConnectionState = BluetoothGatt.STATE_CONNECTING;
+        return true;
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -87,6 +196,7 @@ public class SensorsService extends Service implements SensorEventListener, Loca
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        connect();
         mNoise.startRecorder();
         mFinish = false;
         new Thread(new Runnable() {
@@ -118,7 +228,8 @@ public class SensorsService extends Service implements SensorEventListener, Loca
                                     record.acc + "\t" +
                                     record.speed + "\t" +
                                     record.db + "\t" +
-                                    record.mag;
+                                    record.mag + "\t" +
+                                    record.distance;
                             osw.write(rec + "\n");
                             Log.d(TAG, rec);
                         }
@@ -143,6 +254,11 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         mNoise.stopRecorder();
         mFinish = true;
         Toast.makeText(SensorsService.this, "Service destroyed", Toast.LENGTH_SHORT).show();
+        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+            Log.w(TAG, "BluetoothAdapter not initialized");
+            return;
+        }
+        mBluetoothGatt.disconnect();
     }
 
     float gravity[] = {0, 0, 0};
@@ -176,9 +292,14 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         //Log.d(TAG, mag + " m/s²; " + mNoise.getNoise() + "dB " + loc);
         record.mag = mag;
         record.db = mNoise.getNoise();
+        record.distance = distance;
 
         if (mQueue != null) {
             mQueue.add(record);
+        }
+
+        if (mConnectionState != BluetoothGatt.STATE_CONNECTED || mConnectionState != BluetoothGatt.STATE_CONNECTING) {
+            connect();
         }
     }
 
@@ -223,6 +344,7 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         public double acc;
         public double speed;
         public long timestamp;
+        public double distance;
 
         public Record() {
             timestamp = System.currentTimeMillis();
