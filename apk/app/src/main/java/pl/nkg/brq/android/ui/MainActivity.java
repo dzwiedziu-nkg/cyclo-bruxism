@@ -34,10 +34,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
@@ -47,9 +49,20 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSION_RESPONSE = 29;
 
-    private Button mButtonOn;
-    private Button mButtonOff;
-    private TextView mTextView;
+    @Bind(R.id.button_on)
+    Button mButtonOn;
+    @Bind(R.id.button_off)
+    Button mButtonOff;
+    @Bind(R.id.speedTextView)
+    TextView mSpeedTextView;
+    @Bind(R.id.altitudeTextView)
+    TextView mAltitudeTextView;
+    @Bind(R.id.shakeTextView)
+    TextView mShakeTextView;
+    @Bind(R.id.noiseTextView)
+    TextView mNoiseTextView;
+    @Bind(R.id.distanceTextView)
+    TextView mDistanceTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,23 +88,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        mButtonOn = (Button) findViewById(R.id.button_on);
-        mButtonOn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startService(new Intent(MainActivity.this, SensorsService.class));
-            }
-        });
-
-        mButtonOff = (Button) findViewById(R.id.button_off);
-        mButtonOff.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopService(new Intent(MainActivity.this, SensorsService.class));
-            }
-        });
-
-        mTextView = (TextView) findViewById(R.id.textView);
+        ButterKnife.bind(this);
     }
 
     @Override
@@ -106,6 +103,16 @@ public class MainActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+    @OnClick(R.id.button_on)
+    public void onButtonOnClick() {
+        startService(new Intent(MainActivity.this, SensorsService.class));
+    }
+
+    @OnClick(R.id.button_off)
+    public void onButtonOffClick() {
+        stopService(new Intent(MainActivity.this, SensorsService.class));
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(SensorsServiceState state) {
 
@@ -113,6 +120,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(SensorsRecord record) {
-        mTextView.setText(record.distance + "cm");
+        mSpeedTextView.setText((int) (record.speed * 3.6) + " km/h");
+        mAltitudeTextView.setText((int) record.altitude + " m n.p.m.");
+        mShakeTextView.setText((int) (record.shake * 100) / 100.0 + " m/s²");
+        mNoiseTextView.setText((int) record.soundNoise + " db");
+        mDistanceTextView.setText((double) record.distance / 100.0 + " m");
     }
 }
