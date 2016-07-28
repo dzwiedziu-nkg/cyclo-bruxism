@@ -66,6 +66,7 @@
 <script language="javascript" type="text/javascript" src="js/jquery.flot.js"></script>
 <script language="javascript" type="text/javascript" src="js/jquery.flot.time.js"></script>
 <script language="javascript" type="text/javascript" src="js/jquery.flot.crosshair.js"></script>
+<script language="javascript" type="text/javascript" src="js/jquery.flot.navigate.js"></script>
 <body>
 <div id="floating-panel">
     <input onclick="previous();" type=button value="Previous">
@@ -78,6 +79,7 @@
     Lon: <span id="lon">°</span>
     Alt: <span id="alt"> m n. p. m.</span>
     Acc: <span id="acc"> m</span>
+    Distance: <span id="distance"></span> m
     Speed: <span id="speed"></span> km/h<br/>
     Noise: <span id="noise"></span>
     Magnitude: <span id="mag"></span><br/>
@@ -157,7 +159,7 @@
             flightPlanCoordinates[j++] = {lat: parseFloat(entries[2]), lng: parseFloat(entries[1])};
 
             if (i == 3640) {
-                break;
+                //break;
             }
         }
 
@@ -220,6 +222,7 @@
         $("#speed").html((parseFloat(csv[v][5]) * 3.6).toFixed(0));
         $("#noise").html(parseFloat(csv[v][6]).toFixed(0));
         $("#mag").html(parseFloat(csv[v][7]).toFixed(3));
+        $("#distance").html(parseFloat(csv[v][8] / 100.0).toFixed(2));
     }
 
     var getClosestValues = function(a, x) {
@@ -241,6 +244,7 @@
         var d = [];
         var d2 = [];
         var d3 = [];
+        var d4 = [];
         var j = 0;
         var reverseHash = {};
         var times = [];
@@ -252,6 +256,8 @@
                 d2[j++] = [t, parseFloat(csv[i][6])];
             }
             d3[i] = [t, parseFloat(csv[i][5]) * 3.6];
+            var dist = Math.min(parseFloat(csv[i][8]) / 100.0, 4);
+            d4[i] = [t, dist];
             reverseHash[t] = i;
             times[i] = t;
         }
@@ -259,9 +265,18 @@
         $.plot("#placeholder", [
                 {data: d, label: 'Magnitude [m/s²]'},
                 {data: d2, label: 'Noise [dB]', yaxis:2},
-                {data: d3, label: 'Speed [km/h]', yaxis:3}
+                {data: d3, label: 'Speed [km/h]', yaxis:3},
+                {data: d4, label: 'Distance [m]', yaxis:4}
             ], {
-            xaxis: { mode: "time" },
+            xaxis: {
+                mode: "time"//,
+                //zoomRange: [0.1, 10],
+                //panRange: [-10, 10]
+            },
+            yaxis: {
+                zoomRange: false,
+                panRange: false
+            },
             grid: {
                 hoverable: true,
                 autoHighlight: false
@@ -273,6 +288,12 @@
                 lines: {
                     show: true
                 }
+            },
+            zoom: {
+                interactive: true
+            },
+            pan: {
+                interactive: true
             }
         });
 
@@ -285,7 +306,7 @@
 
             var pos = latestPosition;
             var position = $("#position");
-            var v = getClosestValues(times, pos['x'])
+            var v = getClosestValues(times, pos['x']);
             position.val(reverseHash[v[0]]);
             toogleMarker();
         }
