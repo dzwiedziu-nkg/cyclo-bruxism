@@ -79,9 +79,9 @@ public class SensorsService extends Service implements SensorEventListener, Loca
 
     private SensorsServiceState mState = new SensorsServiceState();
 
-    private UUID service = UUID.fromString("0000181c-0000-1000-8000-00805f9b34fb");
+    private UUID service =        UUID.fromString("0000181c-0000-1000-8000-00805f9b34fb");
     private UUID characteristic = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
-    private UUID descriptor = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private UUID descriptor =     UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
