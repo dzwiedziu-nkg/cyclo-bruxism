@@ -10,8 +10,12 @@ BLEUnsignedShortCharacteristic switchChar("2A19", BLERead | BLENotify);
 
 int Trig = 3;  //pin 2 Arduino połączony z pinem Trigger czujnika
 int Echo = 2;  //pin 3 Arduino połączony z pinem Echo czujnika
-int CM;        //odległość w cm
+int CM = -1;        //odległość w cm
 long CZAS;     //długość powrotnego impulsu w uS
+int oldCM = -1;
+int state = -1;
+int oldState = -1;
+int infinityCount = 0;
  
 void setup() {
   Serial.begin(9600);                        //inicjalizaja monitora szeregowego
@@ -45,12 +49,32 @@ void setup() {
 void loop() {
   blePeripheral.poll();
   pomiar_odleglosci();              //pomiar odległości
-  Serial.print("Odleglosc: ");      //wyświetlanie wyników na ekranie w pętli co 200 ms
-  Serial.print(CM);
-  Serial.println(" cm");
-  switchChar.setValue(CM);
+  //Serial.println(int(sqrt(CM)));
+  
+  if (CM > 1000) {
+    infinityCount++;
+  } else {
+    infinityCount = 0;
+    if (oldCM > 1000) {
+      oldCM = CM;
+    }
+  }
+
+  oldState = state;
+  if (infinityCount > 1) {
+    state = 1;
+  } else {
+    state = 0;
+  }
+  
+  if ((state != oldState) || (state == 0 && infinityCount == 0 && (int(sqrt(min(oldCM, 400))) != int(sqrt(min(CM, 400)))))) {
+    Serial.print("Odleglosc: ");      //wyświetlanie wyników na ekranie w pętli co 200 ms
+    Serial.print(CM);
+    Serial.println(" cm");
+    switchChar.setValue(CM);
+  }
   digitalWrite(13, CM < 20 ? HIGH : LOW);
-  delay(200);
+  //delay(200);
 }
   
 void pomiar_odleglosci () {
@@ -58,6 +82,7 @@ void pomiar_odleglosci () {
   delayMicroseconds(10);
   digitalWrite(Trig, LOW);
   CZAS = pulseIn(Echo, HIGH);
+  oldCM = CM;
   CM = CZAS / 58;                //szerokość odbitego impulsu w uS podzielone przez 58 to odleglosc w cm - patrz dokumentacja
 }
 
