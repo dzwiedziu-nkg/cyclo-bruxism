@@ -51,6 +51,9 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -61,6 +64,7 @@ import pl.nkg.brq.android.sensors.Noise;
 
 public class SensorsService extends Service implements SensorEventListener, LocationListener {
 
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.ENGLISH);
     private static final String TAG = SensorsService.class.getSimpleName();
 
     private SensorManager senSensorManager;
@@ -219,8 +223,12 @@ public class SensorsService extends Service implements SensorEventListener, Loca
         mNoise.startRecorder();
         mFinish = false;
         new Thread(new Runnable() {
+
+
             @Override
             public void run() {
+                File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/brq_" + dateFormat.format(new Date()) + ".csv");
+
                 while (!mFinish) {
                     try {
                         Thread.sleep(10000);
@@ -232,7 +240,7 @@ public class SensorsService extends Service implements SensorEventListener, Loca
                         continue;
                     }
 
-                    File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/brq.csv");
+
 
                     try {
                         FileOutputStream fOut = new FileOutputStream(file, true);
