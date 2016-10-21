@@ -1,6 +1,7 @@
 //#define BLE_101
 //#define DEBUG
 #define SERIAL
+#define FILTER
 
 
 #ifdef BLE_101
@@ -8,7 +9,7 @@
 #endif
 
 
-#define SCAN_PAUSE 0
+#define SCAN_PAUSE 20
 #define MAX_INFINITY_COUNT 1
 const int ledPin = 13; // set ledPin to use on-board LED
 const int Trig = 2;  //pin 2 Arduino połączony z pinem Trigger czujnika
@@ -117,6 +118,7 @@ void loop() {
   Serial.println(state);
 #endif
 
+#ifdef FILTER
   if ((state != oldState) || (state == 0 && infinityCount == 0 && (int(sqrt(min(oldCM, 400))) != int(sqrt(min(CM, 400)))))) {
 #ifdef SERIAL
     Serial.println(CM);
@@ -126,6 +128,18 @@ void loop() {
     switchChar.setValue(CM);
 #endif
   }
+#endif
+
+#ifndef FILTER
+#ifdef SERIAL
+    Serial.println(CM);
+#endif
+
+#ifdef BLE_101
+    switchChar.setValue(CM);
+#endif
+#endif
+  
   digitalWrite(13, CM < 20 ? HIGH : LOW);
   delay(SCAN_PAUSE);
 }
@@ -134,6 +148,7 @@ void pomiar_odleglosci () {
   digitalWrite(Trig, HIGH);       //ustawienie stanu wysokiego na 10 uS - impuls inicjalizujacy - patrz dokumentacja
   delayMicroseconds(10);
   digitalWrite(Trig, LOW);
+  //CZAS = pulseIn(Echo, HIGH, SCAN_PAUSE * 2000);
   CZAS = pulseIn(Echo, HIGH);
   oldCM = CM;
   CM = CZAS / 58;                //szerokość odbitego impulsu w uS podzielone przez 58 to odleglosc w cm - patrz dokumentacja
