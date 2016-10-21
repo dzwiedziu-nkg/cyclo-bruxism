@@ -48,8 +48,14 @@ void setup() {
   pinMode(Echo, INPUT);                      //ustawienie pinu 3 w Arduino jako wejście
   pinMode(13, OUTPUT);
 
-  pinMode(10, INPUT_PULLUP);
-  pinMode(11, INPUT_PULLUP);
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
+  pinMode(6, INPUT);
+  pinMode(7, INPUT);
+  pinMode(8, INPUT);
+  pinMode(9, INPUT);
+  pinMode(10, INPUT);
+  pinMode(11, INPUT);
   pinMode(12, INPUT);
 
 #ifdef DEBUG
@@ -83,8 +89,18 @@ void setup() {
 }
 
 void loop() {
+  int mul = 0;
   int filter = digitalRead(12);
-  //Serial.print(filter);
+
+  int v = 1;
+  for (int i = 11; i >= 4; i--) {
+    if (digitalRead(i)) {
+      mul += v;
+    }
+    v *= 2;
+  }
+
+  int pause = pow(1.4, mul);
   
 #ifdef BLE_101
   blePeripheral.poll();
@@ -135,7 +151,7 @@ void loop() {
   }
   
   digitalWrite(13, CM < 20 ? HIGH : LOW);
-  delay(SCAN_PAUSE);
+  delay(pause);
 }
 
 void pomiar_odleglosci () {
