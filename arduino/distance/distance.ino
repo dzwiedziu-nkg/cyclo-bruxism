@@ -1,7 +1,6 @@
 //#define BLE_101
 //#define DEBUG
 #define SERIAL
-#define FILTER
 
 
 #ifdef BLE_101
@@ -49,6 +48,10 @@ void setup() {
   pinMode(Echo, INPUT);                      //ustawienie pinu 3 w Arduino jako wejście
   pinMode(13, OUTPUT);
 
+  pinMode(10, INPUT_PULLUP);
+  pinMode(11, INPUT_PULLUP);
+  pinMode(12, INPUT);
+
 #ifdef DEBUG
   Serial.println("Test czujnika odleglosci");
 #endif
@@ -80,6 +83,9 @@ void setup() {
 }
 
 void loop() {
+  int filter = digitalRead(12);
+  //Serial.print(filter);
+  
 #ifdef BLE_101
   blePeripheral.poll();
 #endif
@@ -118,8 +124,7 @@ void loop() {
   Serial.println(state);
 #endif
 
-#ifdef FILTER
-  if ((state != oldState) || (state == 0 && infinityCount == 0 && (int(sqrt(min(oldCM, 400))) != int(sqrt(min(CM, 400)))))) {
+  if (!filter || ((state != oldState) || (state == 0 && infinityCount == 0 && (int(sqrt(min(oldCM, 400))) != int(sqrt(min(CM, 400))))))) {
 #ifdef SERIAL
     Serial.println(CM);
 #endif
@@ -128,17 +133,6 @@ void loop() {
     switchChar.setValue(CM);
 #endif
   }
-#endif
-
-#ifndef FILTER
-#ifdef SERIAL
-    Serial.println(CM);
-#endif
-
-#ifdef BLE_101
-    switchChar.setValue(CM);
-#endif
-#endif
   
   digitalWrite(13, CM < 20 ? HIGH : LOW);
   delay(SCAN_PAUSE);
