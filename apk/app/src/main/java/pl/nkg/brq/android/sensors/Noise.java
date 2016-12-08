@@ -25,13 +25,14 @@ import android.media.MediaRecorder;
 
 import java.io.IOException;
 
-public class Noise {
+public class Noise extends QueriedSensor {
 
     private static final String TAG = Noise.class.getSimpleName();
 
     private MediaRecorder mRecorder;
 
-    public void startRecorder() throws SecurityException {
+    @Override
+    public void start() throws SecurityException {
         if (mRecorder == null) {
             mRecorder = new MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -42,12 +43,16 @@ public class Noise {
                 mRecorder.prepare();
                 mRecorder.start();
             } catch (IOException e) {
+                mRecorder = null;
                 throw new RuntimeException("Can't write to /dev/null", e);
             }
         }
+        super.start();
     }
 
-    public void stopRecorder() {
+    @Override
+    public void stop() {
+        super.stop();
         if (mRecorder != null) {
             mRecorder.stop();
             mRecorder.release();
@@ -55,7 +60,8 @@ public class Noise {
         }
     }
 
-    public double getNoise() {
+    @Override
+    protected double acquireValueFromInternal() {
         return 20 * Math.log10(getAmplitude());
     }
 
