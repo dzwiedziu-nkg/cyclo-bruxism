@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="connection_array_entries">
+        <item>Wifi only</item>
+        <item>Intenet</item>
+    </string-array>
+
+    <string-array name="connection_array_values">
+        <item>wifi</item>
+        <item>internet</item>
+    </string-array>
+
+    <string-array name="bike_array_entries">
+        <item>Road bike</item>
+        <item>Mountain bike</item>
+        <item>Bmx</item>
+        <item>Tandem</item>
+    </string-array>
+
+    <string-array name="bike_array_values">
+        <item>Road nike</item>
+        <item>Mountain bike</item>
+        <item>Bmx</item>
+        <item>Tandem</item>
+    </string-array>
+
+    <string-array name="placement_array_entries">
+        <item>Pocket</item>
+        <item>Handlebar</item>
+        <item>Bike</item>
+    </string-array>
+
+    <string-array name="placement_array_values">
+        <item>Pocket</item>
+        <item>Handlebar</item>
+        <item>Bike</item>
+    </string-array>
+</resources>

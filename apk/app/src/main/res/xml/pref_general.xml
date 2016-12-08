@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ListPreference
+        android:title="@string/pref_connection_title"
+        android:key="@string/pref_connection_key"
+        android:defaultValue="@string/pref_connection_def"
+        android:entries="@array/connection_array_entries"
+        android:entryValues="@array/connection_array_values"/>
+
+    <ListPreference
+        android:title="@string/pref_bike_title"
+        android:key="@string/pref_bike_key"
+        android:defaultValue="@string/pref_bike_def"
+        android:entries="@array/bike_array_entries"
+        android:entryValues="@array/bike_array_values"/>
+
+    <ListPreference
+        android:title="@string/pref_placement_title"
+        android:key="@string/pref_placement_key"
+        android:defaultValue="@string/pref_placement_def"
+        android:entries="@array/placement_array_entries"
+        android:entryValues="@array/placement_array_values"/>
+</PreferenceScreen>
