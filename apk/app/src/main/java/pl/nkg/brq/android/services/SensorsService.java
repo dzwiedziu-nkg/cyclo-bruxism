@@ -25,9 +25,12 @@ import org.greenrobot.eventbus.EventBus;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -42,12 +45,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
+import pl.nkg.brq.android.network.NetworkAccessLogin;
+import pl.nkg.brq.android.network.NetworkSaveTrip;
 import pl.nkg.brq.android.sensors.Distance;
 import pl.nkg.brq.android.sensors.DistanceBluetooth;
 import pl.nkg.brq.android.sensors.Location;
 import pl.nkg.brq.android.sensors.Noise;
 import pl.nkg.brq.android.sensors.Quake;
 import pl.nkg.brq.android.sensors.Value;
+import pl.nkg.brq.android.ui.LoginActivity;
 
 public class SensorsService extends Service {
 
@@ -132,6 +138,30 @@ public class SensorsService extends Service {
                         continue;
                     }
 
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+                    String userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
+                    String name = file.getName();
+                    String bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
+                    String phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
+                    String isPublic = "true";
+
+                    try {
+                        String response =  new NetworkSaveTrip().execute(file, userName, name, bikeType, phonePlacement, isPublic).get();
+
+                        if ( response.equals("true") ) {
+                            Log.d("MyApp", "Upload success");
+
+                        } else if (response.equals("false")){
+                            Log.d("MyApp", "Upload failed");
+
+                        } else if (response.equals("falsePost")){
+                            Log.d("MyApp", "Post failed");
+                        }
+                    } catch (Exception e){
+                        Log.e("MyApp", "Upload exception");
+                    }
+
                     writeRecord(file);
                 }
             }
@@ -196,7 +226,7 @@ public class SensorsService extends Service {
         mLocation.stop();
         mTimer.cancel();
         mWriteThread.interrupt();
-        Toast.makeText(SensorsService.this, R.string.service_end, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(SensorsService.this, R.string.service_end, Toast.LENGTH_SHORT).show();
     }
 
     public class LocalBinder extends Binder {

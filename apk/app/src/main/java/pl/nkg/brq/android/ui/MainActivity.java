@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (itemId == R.id.action_logout) {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(LoginActivity.userLoggedInPreference, "");
+            editor.putString(getString(R.string.pref_user_logged_key), "");
             editor.commit();
 
             finish();

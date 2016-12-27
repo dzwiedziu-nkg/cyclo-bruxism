@@ -28,8 +28,6 @@ import pl.nkg.brq.android.network.NetworkAccessRegister;
 
 public class LoginActivity extends AppCompatActivity {
 
-    final static protected String userLoggedInPreference = "pref_user_login";
-
     EditText userNameEditText;
     EditText passwordEditText;
 
@@ -47,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        if ( !sharedPreferences.getString(userLoggedInPreference, "").equals("") ) {
+        if ( !sharedPreferences.getString(getString(R.string.pref_user_logged_key), "").equals("") ) {
             startMainActivity();
         }
 
@@ -83,7 +81,7 @@ public class LoginActivity extends AppCompatActivity {
             String response =  new NetworkAccessLogin().execute(userName, password).get();
             if ( response.equals("true") ) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(userLoggedInPreference, userName);
+                editor.putString(getString(R.string.pref_user_logged_key), userName);
                 editor.commit();
 
                 startMainActivity();
@@ -99,8 +97,6 @@ public class LoginActivity extends AppCompatActivity {
     Metoda wywołująca formularz do rejestracji nowego użytkownika. Obsługuje interfejs oraz listenery odpowiednich elementów.
      */
     public void onRegister(View view){
-        //TODO prawdziwa rejestracja
-
         final Dialog myDialog = new Dialog(this);
         myDialog.setContentView(R.layout.register_form);
 

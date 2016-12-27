@@ -18,8 +18,8 @@
     </string-array>
 
     <string-array name="bike_array_values">
-        <item>Road nike</item>
-        <item>Mountain bike</item>
+        <item>Road_bike</item>
+        <item>Mountain_bike</item>
         <item>Bmx</item>
         <item>Tandem</item>
     </string-array>
