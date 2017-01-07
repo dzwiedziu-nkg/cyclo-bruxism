@@ -16,16 +16,7 @@ class Trip(models.Model):
 
 	is_public = models.BooleanField()
 
+	data_file = models.FileField(upload_to='documents')
+
 	def __str__(self):
 		return self.name
-
-class TripDetail(models.Model):
-	trip_fkey = models.ForeignKey(Trip, on_delete=models.CASCADE)
-
-	timestamp = models.BigIntegerField()
-	score = models.IntegerField()
-
-	longitude = models.BigIntegerField()
-	latitude = models.BigIntegerField()
-	altitude = models.BigIntegerField()
-	speed = models.BigIntegerField()

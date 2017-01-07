@@ -1,12 +1,18 @@
 package pl.nkg.brq.android.network;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -30,11 +36,6 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
             String phonePlacement = (String) urls[4];
             String isPublic = (String) urls[5];
 
-            String attachmentName = file.getName();
-            String attachmentFileName = file.getName();
-            String crlf = "\r\n";
-            String twoHyphens = "--";
-            String boundary =  "*****";
 
             URL url = new URL("http://192.168.0.14:8000/mydatabase/saveTrip/"
                     + userName + "/"
@@ -44,18 +45,29 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
                     + isPublic);
 
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("POST");
             urlConnection.setDoOutput(true);
-            urlConnection.setConnectTimeout(7000);
-            urlConnection.addRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.connect();
 
-            OutputStream outputStream = urlConnection.getOutputStream();
-            BufferedWriter httpRequestBodyWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
+            DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream());
+            InputStream inputStream;
 
-            InputStream inputStream = urlConnection.getInputStream();
+            outputStream.writeBytes(file.toString());
+            outputStream.flush();
+            outputStream.close();
+
+            if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                inputStream = urlConnection.getInputStream();
+            } else {
+                inputStream = urlConnection.getErrorStream();
+            }
+
             String encoding = urlConnection.getContentEncoding();
             encoding = encoding == null ? "UTF-8" : encoding;
             String myResponse = IOUtils.toString(inputStream, encoding);
+
+            inputStream.close();
 
             return myResponse;
         } catch (Exception e) {

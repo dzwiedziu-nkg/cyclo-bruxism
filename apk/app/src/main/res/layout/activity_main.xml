@@ -40,12 +40,29 @@
 
     </LinearLayout>
 
+    <EditText
+        android:id="@+id/trip_name_edit"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/main_edit_text"
+        android:textCursorDrawable="@null"
+        android:padding="6dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:hint="@string/trip_name_hint"
+        android:focusable = "true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/trip_name_info" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/bike_type_info" />
-
 
     <TextView
         android:layout_width="wrap_content"

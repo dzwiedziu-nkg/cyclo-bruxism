@@ -29,6 +29,7 @@ public class NetworkAccessLogin extends AsyncTask<String, Void, String> {
             URL url = new URL("http://192.168.0.14:8000/mydatabase/login/"
                     + userName + "/"
                     + password);
+
             URLConnection urlConnection =  url.openConnection();
 
             InputStream in = urlConnection.getInputStream();

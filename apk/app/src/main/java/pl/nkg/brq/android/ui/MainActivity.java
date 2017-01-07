@@ -41,6 +41,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
 
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     Button mButtonOn;
     @Bind(R.id.button_off)
     Button mButtonOff;
+    @Bind(R.id.trip_name_info)
+    TextView mNameTextView;
     @Bind(R.id.speedTextView)
     TextView mSpeedTextView;
     @Bind(R.id.altitudeTextView)
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     @Bind(R.id.warningTextView)
     TextView mWarningTextView;
 
+    EditText nameEditText;
     TextView bikeTextView;
     TextView placementTextView;
 
@@ -107,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
+        nameEditText = (EditText) findViewById(R.id.trip_name_edit);
         bikeTextView = (TextView) findViewById(R.id.bike_type_info);
         placementTextView = (TextView) findViewById(R.id.phone_placement_info);
         updateDescription();
@@ -171,15 +176,21 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.button_on)
     public void onButtonOnClick() {
-        startService(new Intent(MainActivity.this, SensorsService.class));
+        Intent sensorIntent = new Intent(MainActivity.this, SensorsService.class);
+        sensorIntent.putExtra(getString(R.string.trip_name_key), nameEditText.getText().toString());
+
+        startService(sensorIntent);
 
         //TODO zapisanie ustawień rowera itp
 
+        mNameTextView.setVisibility(View.VISIBLE);
         mSpeedTextView.setVisibility(View.VISIBLE);
         mAltitudeTextView.setVisibility(View.VISIBLE);
         mShakeTextView.setVisibility(View.VISIBLE);
         mNoiseTextView.setVisibility(View.VISIBLE);
         mDistanceTextView.setVisibility(View.VISIBLE);
+
+        nameEditText.setVisibility(View.GONE);
 
         mButtonOn.setVisibility(View.GONE);
         mButtonOff.setVisibility(View.VISIBLE);
@@ -189,11 +200,14 @@ public class MainActivity extends AppCompatActivity {
     public void onButtonOffClick() {
         stopService(new Intent(MainActivity.this, SensorsService.class));
 
+        mNameTextView.setVisibility(View.GONE);
         mSpeedTextView.setVisibility(View.GONE);
         mAltitudeTextView.setVisibility(View.GONE);
         mShakeTextView.setVisibility(View.GONE);
         mNoiseTextView.setVisibility(View.GONE);
         mDistanceTextView.setVisibility(View.GONE);
+
+        nameEditText.setVisibility(View.VISIBLE);
 
         mButtonOn.setVisibility(View.VISIBLE);
         mButtonOff.setVisibility(View.GONE);
@@ -206,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(SensorsRecord record) {
+        mNameTextView.setText(getString(R.string.name_text) + nameEditText.getText().toString());
         mSpeedTextView.setText(getString(R.string.speed_text) + (int) (record.speed * 3.6) + " km/h");
         mAltitudeTextView.setText(getString(R.string.altitude_text) + (int) record.altitude + " m n.p.m.");
         mShakeTextView.setText( getString(R.string.acceleration_text) +  (int) (record.shake * 100) / 100.0 + " m/s²");

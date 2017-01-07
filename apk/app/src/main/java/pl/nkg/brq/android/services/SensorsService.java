@@ -23,7 +23,9 @@ package pl.nkg.brq.android.services;
 
 import org.greenrobot.eventbus.EventBus;
 
+import android.app.Activity;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
@@ -31,6 +33,7 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
@@ -54,6 +57,7 @@ import pl.nkg.brq.android.sensors.Noise;
 import pl.nkg.brq.android.sensors.Quake;
 import pl.nkg.brq.android.sensors.Value;
 import pl.nkg.brq.android.ui.LoginActivity;
+import pl.nkg.brq.android.ui.MainActivity;
 
 public class SensorsService extends Service {
 
@@ -77,6 +81,8 @@ public class SensorsService extends Service {
     private Quake mQuake;
     private Distance mDistance;
     private Location mLocation;
+
+    Intent myIntent;
 
     private synchronized boolean isFinish() {
         return mFinish;
@@ -102,6 +108,8 @@ public class SensorsService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        myIntent = intent;
 
         mNoise.start();
         mQuake.start();
@@ -141,13 +149,19 @@ public class SensorsService extends Service {
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
                     String userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
-                    String name = file.getName();
+                    String name = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
                     String bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
                     String phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
-                    String isPublic = "true";
+                    String isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
+
+                    //zapasowa nazwa jeśli żadnej nie podano:
+                    if (name.equals("")) {
+                        name = file.getName();
+                    }
 
                     try {
                         String response =  new NetworkSaveTrip().execute(file, userName, name, bikeType, phonePlacement, isPublic).get();
+                        Log.d("MYAPP", response);
 
                         if ( response.equals("true") ) {
                             Log.d("MyApp", "Upload success");
@@ -159,7 +173,7 @@ public class SensorsService extends Service {
                             Log.d("MyApp", "Post failed");
                         }
                     } catch (Exception e){
-                        Log.e("MyApp", "Upload exception");
+                        Log.e("MyApp", e.getMessage());
                     }
 
                     writeRecord(file);

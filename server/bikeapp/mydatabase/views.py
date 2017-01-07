@@ -4,6 +4,8 @@ from django.http import HttpResponse
 import json
 
 from .models import User
+from .models import Trip
+from .forms import DocumentForm
 
 def index(request):
 	return HttpResponse("Hello world")
@@ -23,13 +25,27 @@ def register(request, userName, password):
 		User.objects.create(user_name=userName, password=password)
 		return HttpResponse('true')
 
-def saveTrip(request):
-	if request.method == 'POST':
-		json_data = json.loads(request.body)
-		try:
-			#Tu ma być odczytywanie wysłanych danych na temat podróży
-			pass
-		except KeyError:
-			return HttpResponse('false')
-		return HttpResponse('true')
-	return HttpResponse('no_json')
+def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic):
+	if request.method != 'POST':
+
+		user = User.objects.filter(user_name=userName)
+		form = DocumentForm(request.POST, request.FILES)
+
+		if (user and form.is_valid()):
+			boolIsPublic = False
+			if isPublic == 'true':
+				boolIsPublic = True
+
+			Trip.objects.create(
+				user_fkey=user.get(), 
+				name=name, 
+				bike_used=bikeType, 
+				phone_placement=phonePlacement, 
+				is_public=boolIsPublic, 
+				data_file = request.FILES['docfile'])
+
+			return HttpResponse('true')
+
+		return HttpResponse('false')
+
+	return HttpResponse('falsePost')

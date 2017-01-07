@@ -29,6 +29,8 @@
     <string name="button_on_text">Start tracking!</string>
     <string name="button_off_text">Stop tracking!</string>
 
+    <string name="trip_name_hint">Name...</string>
+    <string name="name_text">"Name: "</string>
     <string name="speed_text">"Speed: "</string>
     <string name="altitude_text">"Altitude: "</string>
     <string name="acceleration_text">"Acceleration: "</string>
@@ -50,8 +52,13 @@
     <string name="pref_placement_key">placement_type</string>
     <string name="pref_placement_def">Pocket</string>
 
+    <string name="pref_sharing_title">Sharing</string>
+    <string name="pref_sharing_key">public_availability</string>
+    <string name="pref_sharing_summary">Check if you want to share your data with others!</string>
+
     <string name="bike_type_info">"Bike type: "</string>
     <string name="placement_info">"Phone placement: "</string>
     <string name="network_problems_toast">Internet problems...</string>
     <string name="action_logout">Logout and quit</string>
+    <string name="trip_name_key">trip_name</string>
 </resources>

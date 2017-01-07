@@ -18,10 +18,10 @@
     </string-array>
 
     <string-array name="bike_array_values">
-        <item>Road_bike</item>
-        <item>Mountain_bike</item>
-        <item>Bmx</item>
-        <item>Tandem</item>
+        <item>road_bike</item>
+        <item>mountain_bike</item>
+        <item>bmx</item>
+        <item>tandem</item>
     </string-array>
 
     <string-array name="placement_array_entries">
@@ -31,8 +31,8 @@
     </string-array>
 
     <string-array name="placement_array_values">
-        <item>Pocket</item>
-        <item>Handlebar</item>
-        <item>Bike</item>
+        <item>pocket</item>
+        <item>handlebar</item>
+        <item>bike</item>
     </string-array>
 </resources>

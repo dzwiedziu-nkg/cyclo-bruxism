@@ -1,0 +1,9 @@
+jak uruchomiæ serwer vnc dla ekranu numer 5 i go zatrzymaæ
+- co to jest vhost
+- jak dodaæ u¿ytkownika do samby
+- do czego s³u¿y w Apache: DocumentRoot, Order i jeszcze coœ jednego by³o,
+- jak zabezpieczyæ po³¹czenie VNC
+- do czego s³u¿y nmblookup
+- co to jest PAM
+- jak dzia³a tryb aktywny FTP
+- do czego s³u¿¹ tablice wirtualne kont na postfiksie

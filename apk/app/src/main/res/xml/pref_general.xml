@@ -23,4 +23,11 @@
         android:defaultValue="@string/pref_placement_def"
         android:entries="@array/placement_array_entries"
         android:entryValues="@array/placement_array_values"/>
+
+    <CheckBoxPreference
+        android:title="@string/pref_sharing_title"
+        android:key="@string/pref_sharing_key"
+        android:summary="@string/pref_sharing_summary"
+        android:defaultValue="true"
+        />
 </PreferenceScreen>
