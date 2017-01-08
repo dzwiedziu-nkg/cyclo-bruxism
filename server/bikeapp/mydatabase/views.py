@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 import json
 
@@ -25,16 +26,18 @@ def register(request, userName, password):
 		User.objects.create(user_name=userName, password=password)
 		return HttpResponse('true')
 
+@csrf_exempt 
 def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic):
-	if request.method != 'POST':
+	if request.method == 'POST':
 
 		user = User.objects.filter(user_name=userName)
 		form = DocumentForm(request.POST, request.FILES)
 
-		if (user and form.is_valid()):
+		if (user):# and form.is_valid()):
 			boolIsPublic = False
 			if isPublic == 'true':
 				boolIsPublic = True
+
 
 			Trip.objects.create(
 				user_fkey=user.get(), 
