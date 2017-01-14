@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import pl.nkg.brq.android.ConstValues;
+
 /**
  * Created by aaa on 2016-12-06.
  */
@@ -21,7 +23,7 @@ public class NetworkAccessRegister extends AsyncTask<String, Void, String> {
             String userName = urls[0];
             String password = urls[1];
 
-            URL url = new URL("http://192.168.0.14:8000/mydatabase/register/"
+            URL url = new URL(ConstValues.BASE_URL + "/mydatabase/register/"
                     + userName + "/"
                     + password);
             URLConnection urlConnection =  url.openConnection();

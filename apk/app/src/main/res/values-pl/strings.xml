@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Road Quality Tester</string>
 
-    <string name="login_button">Sign in</string>
-    <string name="register_button">Register</string>
+    <string name="login_button">Zaloguj się</string>
+    <string name="register_button">Zarejestruj się</string>
     <string name="register_button_done">Ok</string>
 
     <string name="username_edit_hint">Login</string>

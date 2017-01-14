@@ -10,13 +10,13 @@ class User(models.Model):
 class Trip(models.Model):
 	user_fkey = models.ForeignKey(User, on_delete=models.CASCADE)
 
+	is_public = models.BooleanField()
+
 	name = models.CharField(max_length=60)
 	bike_used = models.CharField(max_length=40)
 	phone_placement = models.CharField(max_length=40)
 
-	is_public = models.BooleanField()
-
-	data_file = models.FileField(upload_to='documents')
+	trip_data = models.TextField()
 
 	def __str__(self):
 		return self.name

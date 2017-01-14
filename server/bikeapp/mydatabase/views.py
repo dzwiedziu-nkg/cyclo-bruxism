@@ -31,24 +31,22 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic):
 	if request.method == 'POST':
 
 		user = User.objects.filter(user_name=userName)
-		form = DocumentForm(request.POST, request.FILES)
 
-		if (user):# and form.is_valid()):
+		if (user and request.body):
 			boolIsPublic = False
 			if isPublic == 'true':
 				boolIsPublic = True
 
-
 			Trip.objects.create(
-				user_fkey=user.get(), 
-				name=name, 
-				bike_used=bikeType, 
-				phone_placement=phonePlacement, 
-				is_public=boolIsPublic, 
-				data_file = request.FILES['docfile'])
+				user_fkey = user.get(), 
+				name = name, 
+				bike_used = bikeType, 
+				phone_placement = phonePlacement, 
+				is_public = boolIsPublic, 
+				trip_data = request.body)
 
 			return HttpResponse('true')
 
-		return HttpResponse('false')
+		return HttpResponse('false_invalid_form')
 
-	return HttpResponse('falsePost')
+	return HttpResponse('false_post')

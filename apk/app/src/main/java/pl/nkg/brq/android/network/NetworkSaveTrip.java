@@ -4,6 +4,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -21,6 +23,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Scanner;
 
+import pl.nkg.brq.android.ConstValues;
+
 /**
  * Created by aaa on 2016-12-06.
  */
@@ -31,44 +35,46 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
     protected String doInBackground(Object... urls) {
         try {
-            File file = (File) urls[0];
+
+            Log.d("MYAPP", "TEST----POCZATEK----");
+
+            JSONObject jsonObjectMain = (JSONObject) urls[0];
             String userName = (String) urls[1];
             String name = (String) urls[2];
             String bikeType = (String) urls[3];
             String phonePlacement = (String) urls[4];
             String isPublic = (String) urls[5];
 
-            URL url = new URL("http://192.168.0.14:8000/mydatabase/saveTrip/"
+            Log.d("MYAPP", jsonObjectMain.toString());
+
+            URL url = new URL(ConstValues.BASE_URL + "/mydatabase/saveTrip/"
                     + userName + "/"
                     + name + "/"
                     + bikeType + "/"
                     + phonePlacement + "/"
                     + isPublic + "/");
 
+            HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
 
-            Log.d("MYAPP", "TEST----1---------");
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.connect();
 
-            Log.d("MYAPP", userName);
-            Log.d("MYAPP", name);
-            Log.d("MYAPP", bikeType);
-            Log.d("MYAPP", phonePlacement);
-            Log.d("MYAPP", isPublic);
-            Log.d("MYAPP", file.toString());
+            DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
+            wr.writeBytes(jsonObjectMain.toString());
+            wr.flush();
+            wr.close();
 
-            Log.d("MYAPP", "TEST----2---------");
+            InputStream in = urlConnection.getInputStream();
+            String encoding = urlConnection.getContentEncoding();
+            encoding = encoding == null ? "UTF-8" : encoding;
+            String myResponse = IOUtils.toString(in, encoding);
 
-            Scanner input = null;
-            try {
-                input = new Scanner(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+            Log.d("MYAPP", myResponse);
 
-            while (input.hasNextLine()){
-                Log.d("MYAPP", input.nextLine());
-            }
-
-            Log.d("MYAPP", "TEST----KONIEC------");
+            Log.d("MYAPP", "TEST----KONIEC----");
+            Log.d("MYAPP", myResponse);
 
             /*
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -98,11 +104,10 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
             inputStream.close();
 
-            return myResponse;
-
             */
 
-            return "true";
+            return myResponse;
+
         } catch (Exception e) {
             this.exception = e;
             return null;
