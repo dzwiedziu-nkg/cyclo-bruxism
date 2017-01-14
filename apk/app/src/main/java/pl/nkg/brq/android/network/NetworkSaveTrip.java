@@ -35,17 +35,12 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
     protected String doInBackground(Object... urls) {
         try {
-
-            Log.d("MYAPP", "TEST----POCZATEK----");
-
             JSONObject jsonObjectMain = (JSONObject) urls[0];
             String userName = (String) urls[1];
             String name = (String) urls[2];
             String bikeType = (String) urls[3];
             String phonePlacement = (String) urls[4];
             String isPublic = (String) urls[5];
-
-            Log.d("MYAPP", jsonObjectMain.toString());
 
             URL url = new URL(ConstValues.BASE_URL + "/mydatabase/saveTrip/"
                     + userName + "/"

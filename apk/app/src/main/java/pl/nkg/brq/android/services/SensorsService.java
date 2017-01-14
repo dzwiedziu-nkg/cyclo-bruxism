@@ -43,6 +43,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -88,8 +89,8 @@ public class SensorsService extends Service {
     private Distance mDistance;
     private Location mLocation;
 
-    JSONObject jsonObjectMain;
-    File file;
+    private JSONObject jsonObjectMain;
+    private String fileName;
     Intent myIntent;
 
     private synchronized boolean isFinish() {
@@ -141,7 +142,8 @@ public class SensorsService extends Service {
 
             @Override
             public void run() {
-                file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/brq_" + dateFormat.format(new Date()) + ".csv");
+                //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/brq_" + dateFormat.format(new Date()) + ".csv");
+                fileName = "brq_" + dateFormat.format(new Date());
 
                 while (!isFinish()) {
                     try {
@@ -177,6 +179,8 @@ public class SensorsService extends Service {
         Value distance = mDistance.getValue();
         record.distance  = (int)(distance.getTimestampOfUpdated() + 2 * saveDuration < System.currentTimeMillis() ? distance.getValue() : distance.getMinValue());
         //record.distance = (int) mDistance.getValue().getMinValue();
+
+        // O TU TUTAJ !!!!
         record.soundNoise = mNoise.getValue().getValue();
         record.shake = mQuake.getValue().getMaxValue();
         mQueue.add(record);
@@ -184,12 +188,15 @@ public class SensorsService extends Service {
     }
 
     private void writeRecord() {
+        jsonObjectMain = new JSONObject();
+        JSONArray jsonArrayMain = new JSONArray();
+        JSONArray jsonArrayRecord;
+        JSONObject jsonObject;
+
         try {
-            FileOutputStream fOut = new FileOutputStream(file, true);
-            OutputStreamWriter osw = new OutputStreamWriter(fOut);
-            int count = mQueue.size();
             while (mQueue.size() > 0) {
                 SensorsRecord record = mQueue.poll();
+
                 String rec = record.timestamp + "\t" +
                         record.longitude + "\t" +
                         record.latitude + "\t" +
@@ -199,25 +206,7 @@ public class SensorsService extends Service {
                         record.soundNoise + "\t" +
                         record.shake + "\t" +
                         record.distance;
-                osw.write(rec + "\n");
-            }
-            osw.flush();
-            osw.close();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-
-
-/*
-        Log.d("MYAPP", "PRZED");
-        jsonObjectMain = new JSONObject();
-        JSONArray jsonArrayMain = new JSONArray();
-        JSONArray jsonArrayRecord;
-        JSONObject jsonObject;
-
-        try {
-            while (mQueue.size() > 0) {
-                SensorsRecord record = mQueue.poll();
+                Log.d("APP", rec);
 
                 jsonArrayRecord = new JSONArray();
 
@@ -237,19 +226,32 @@ public class SensorsService extends Service {
                 jsonObject.put("altitude", record.altitude);
                 jsonArrayRecord.put(jsonObject);
 
+                //TU SIE JSONY SYPIA PRZY NIEDOBRYCH WARTOSCIACH!!!!!!
+/*
+                jsonObject = new JSONObject();
+                jsonObject.put("accuracy", record.accuracy);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonObject = new JSONObject();
+                jsonObject.put("speed", record.speed);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonObject = new JSONObject();
+                jsonObject.put("soundNoise", record.soundNoise);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonObject = new JSONObject();
+                jsonObject.put("shake", record.shake);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonObject = new JSONObject();
+                jsonObject.put("distance", record.distance);
+                jsonArrayRecord.put(jsonObject);
+*/
                 jsonArrayMain.put(jsonArrayRecord);
             }
 
             jsonObjectMain.put("trip_data", jsonArrayMain);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        */
-
-        try {
-            jsonObjectMain = new JSONObject();
-            jsonObjectMain.put("trip_data", "TEST");
-            Log.d("MYAPP", jsonObjectMain.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -259,6 +261,7 @@ public class SensorsService extends Service {
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         setFinish(true);
         mNoise.stop();
         mQuake.stop();
@@ -266,7 +269,6 @@ public class SensorsService extends Service {
         mLocation.stop();
         mTimer.cancel();
         mWriteThread.interrupt();
-        super.onDestroy();
     }
 
     public void sendFile() {
@@ -280,8 +282,7 @@ public class SensorsService extends Service {
 
         //zapasowa nazwa jeśli żadnej nie podano:
         if (name.equals("")) {
-            name = file.getName();
-            name = name.substring(0, name.indexOf('.'));
+            name = fileName;
         }
 
         try {

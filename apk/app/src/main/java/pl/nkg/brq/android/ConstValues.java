@@ -20,3 +20,28 @@ try {
 while (input.hasNextLine()){
     Log.d("MYAPP", input.nextLine());
 }*/
+
+
+ /*
+        try {
+            FileOutputStream fOut = new FileOutputStream(file, true);
+            OutputStreamWriter osw = new OutputStreamWriter(fOut);
+            int count = mQueue.size();
+            while (mQueue.size() > 0) {
+                SensorsRecord record = mQueue.poll();
+                String rec = record.timestamp + "\t" +
+                        record.longitude + "\t" +
+                        record.latitude + "\t" +
+                        record.altitude + "\t" +
+                        record.accuracy + "\t" +
+                        record.speed + "\t" +
+                        record.soundNoise + "\t" +
+                        record.shake + "\t" +
+                        record.distance;
+                osw.write(rec + "\n");
+            }
+            osw.flush();
+            osw.close();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }*/
