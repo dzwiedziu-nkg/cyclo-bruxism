@@ -22,6 +22,9 @@
 package pl.nkg.brq.android.services;
 
 import org.greenrobot.eventbus.EventBus;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.Service;
@@ -85,6 +88,7 @@ public class SensorsService extends Service {
     private Distance mDistance;
     private Location mLocation;
 
+    JSONObject jsonObjectMain;
     File file;
     Intent myIntent;
 
@@ -150,7 +154,7 @@ public class SensorsService extends Service {
                         continue;
                     }
 
-                    writeRecord(file);
+                    writeRecord();
                 }
             }
         });
@@ -179,7 +183,7 @@ public class SensorsService extends Service {
         EventBus.getDefault().post(record);
     }
 
-    private void writeRecord(File file) {
+    private void writeRecord() {
         try {
             FileOutputStream fOut = new FileOutputStream(file, true);
             OutputStreamWriter osw = new OutputStreamWriter(fOut);
@@ -202,6 +206,55 @@ public class SensorsService extends Service {
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
+
+
+/*
+        Log.d("MYAPP", "PRZED");
+        jsonObjectMain = new JSONObject();
+        JSONArray jsonArrayMain = new JSONArray();
+        JSONArray jsonArrayRecord;
+        JSONObject jsonObject;
+
+        try {
+            while (mQueue.size() > 0) {
+                SensorsRecord record = mQueue.poll();
+
+                jsonArrayRecord = new JSONArray();
+
+                jsonObject = new JSONObject();
+                jsonObject.put("timestamp", record.timestamp);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonObject = new JSONObject();
+                jsonObject.put("longitude", record.longitude);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonObject = new JSONObject();
+                jsonObject.put("latitude", record.latitude);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonObject = new JSONObject();
+                jsonObject.put("altitude", record.altitude);
+                jsonArrayRecord.put(jsonObject);
+
+                jsonArrayMain.put(jsonArrayRecord);
+            }
+
+            jsonObjectMain.put("trip_data", jsonArrayMain);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        */
+
+        try {
+            jsonObjectMain = new JSONObject();
+            jsonObjectMain.put("trip_data", "TEST");
+            Log.d("MYAPP", jsonObjectMain.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        sendFile();
     }
 
     @Override
@@ -213,8 +266,6 @@ public class SensorsService extends Service {
         mLocation.stop();
         mTimer.cancel();
         mWriteThread.interrupt();
-        sendFile();
-        //Toast.makeText(SensorsService.this, R.string.service_end, Toast.LENGTH_SHORT).show();
         super.onDestroy();
     }
 
@@ -234,16 +285,15 @@ public class SensorsService extends Service {
         }
 
         try {
-            String response =  new NetworkSaveTrip().execute(file, userName, name, bikeType, phonePlacement, isPublic).get();
-            Log.d("MYAPP", response);
+            String response =  new NetworkSaveTrip().execute(jsonObjectMain, userName, name, bikeType, phonePlacement, isPublic).get();
 
             if ( response.equals("true") ) {
                 Log.d("MyApp", "Upload success");
 
-            } else if (response.equals("false")){
+            } else if (response.equals("false_invalid_form")){
                 Log.d("MyApp", "Upload failed");
 
-            } else if (response.equals("falsePost")){
+            } else if (response.equals("false_post")){
                 Log.d("MyApp", "Post failed");
             }
         } catch (Exception e){
