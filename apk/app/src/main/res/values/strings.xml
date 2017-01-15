@@ -23,6 +23,8 @@
 
     <string name="service_start">Service start</string>
     <string name="service_end">Service destroyed</string>
+    <string name="timeout_exception_toast">Unable to connect with server...</string>
+    <string name="upload_success_toast">Upload successful!</string>
 
     <string name="button_on_text">Start tracking!</string>
     <string name="button_off_text">Stop tracking!</string>

@@ -31,8 +31,6 @@ import pl.nkg.brq.android.ConstValues;
 
 public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
-    private Exception exception;
-
     protected String doInBackground(Object... urls) {
         try {
             JSONObject jsonObjectMain = (JSONObject) urls[0];
@@ -54,6 +52,7 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
             urlConnection.connect();
 
             DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
@@ -66,46 +65,13 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
             encoding = encoding == null ? "UTF-8" : encoding;
             String myResponse = IOUtils.toString(in, encoding);
 
-            Log.d("MYAPP", myResponse);
-
-            Log.d("MYAPP", "TEST----KONIEC----");
-            Log.d("MYAPP", myResponse);
-
-            /*
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setDoOutput(true);
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setRequestProperty("Connection", "Keep-Alive");
-            urlConnection.setRequestProperty("Cache-Control", "no-cache");
-            //urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.connect();
-
-            DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream());
-            InputStream inputStream;
-
-            outputStream.writeBytes(file.toString());
-            outputStream.flush();
-            outputStream.close();
-
-            if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
-                inputStream = urlConnection.getInputStream();
-            } else {
-                inputStream = urlConnection.getErrorStream();
-            }
-
-            String encoding = urlConnection.getContentEncoding();
-            encoding = encoding == null ? "UTF-8" : encoding;
-            String myResponse = IOUtils.toString(inputStream, encoding);
-
-            inputStream.close();
-
-            */
-
             return myResponse;
 
+        } catch (java.net.SocketTimeoutException e) {
+            return "false_timeout";
         } catch (Exception e) {
-            this.exception = e;
-            return null;
+            Log.e("MyApp", e.getMessage());
+            return "";
         }
     }
 }

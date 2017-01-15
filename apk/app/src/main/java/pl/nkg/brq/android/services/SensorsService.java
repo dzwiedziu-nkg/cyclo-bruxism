@@ -33,22 +33,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -63,8 +57,6 @@ import pl.nkg.brq.android.sensors.Location;
 import pl.nkg.brq.android.sensors.Noise;
 import pl.nkg.brq.android.sensors.Quake;
 import pl.nkg.brq.android.sensors.Value;
-import pl.nkg.brq.android.ui.LoginActivity;
-import pl.nkg.brq.android.ui.MainActivity;
 
 public class SensorsService extends Service {
 
@@ -83,6 +75,7 @@ public class SensorsService extends Service {
 
     private Timer mTimer = new Timer();
     private Thread mWriteThread;
+    private Handler handler;
 
     private Noise mNoise;
     private Quake mQuake;
@@ -117,7 +110,7 @@ public class SensorsService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        handler = new Handler();
         myIntent = intent;
 
         mNoise.start();
@@ -179,12 +172,13 @@ public class SensorsService extends Service {
         Value distance = mDistance.getValue();
         record.distance  = (int)(distance.getTimestampOfUpdated() + 2 * saveDuration < System.currentTimeMillis() ? distance.getValue() : distance.getMinValue());
         //record.distance = (int) mDistance.getValue().getMinValue();
-
-        // O TU TUTAJ !!!!
         record.soundNoise = mNoise.getValue().getValue();
         record.shake = mQuake.getValue().getMaxValue();
-        mQueue.add(record);
-        EventBus.getDefault().post(record);
+
+        if (!Double.isInfinite(record.soundNoise)){
+            mQueue.add(record);
+            EventBus.getDefault().post(record);
+        }
     }
 
     private void writeRecord() {
@@ -196,17 +190,6 @@ public class SensorsService extends Service {
         try {
             while (mQueue.size() > 0) {
                 SensorsRecord record = mQueue.poll();
-
-                String rec = record.timestamp + "\t" +
-                        record.longitude + "\t" +
-                        record.latitude + "\t" +
-                        record.altitude + "\t" +
-                        record.accuracy + "\t" +
-                        record.speed + "\t" +
-                        record.soundNoise + "\t" +
-                        record.shake + "\t" +
-                        record.distance;
-                Log.d("APP", rec);
 
                 jsonArrayRecord = new JSONArray();
 
@@ -226,8 +209,6 @@ public class SensorsService extends Service {
                 jsonObject.put("altitude", record.altitude);
                 jsonArrayRecord.put(jsonObject);
 
-                //TU SIE JSONY SYPIA PRZY NIEDOBRYCH WARTOSCIACH!!!!!!
-/*
                 jsonObject = new JSONObject();
                 jsonObject.put("accuracy", record.accuracy);
                 jsonArrayRecord.put(jsonObject);
@@ -247,7 +228,7 @@ public class SensorsService extends Service {
                 jsonObject = new JSONObject();
                 jsonObject.put("distance", record.distance);
                 jsonArrayRecord.put(jsonObject);
-*/
+
                 jsonArrayMain.put(jsonArrayRecord);
             }
 
@@ -285,21 +266,31 @@ public class SensorsService extends Service {
             name = fileName;
         }
 
+
         try {
             String response =  new NetworkSaveTrip().execute(jsonObjectMain, userName, name, bikeType, phonePlacement, isPublic).get();
 
             if ( response.equals("true") ) {
-                Log.d("MyApp", "Upload success");
-
+                makeToast(getString(R.string.upload_success_toast));
             } else if (response.equals("false_invalid_form")){
                 Log.d("MyApp", "Upload failed");
-
             } else if (response.equals("false_post")){
                 Log.d("MyApp", "Post failed");
+            } else if (response.equals("false_timeout")){
+                makeToast(getString(R.string.timeout_exception_toast));
             }
         } catch (Exception e){
             Log.e("MyApp", e.getMessage());
         }
+    }
+
+    private void makeToast(final String text){
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public class LocalBinder extends Binder {

@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from itertools import chain
 
 import json
 
@@ -50,3 +52,42 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic):
 		return HttpResponse('false_invalid_form')
 
 	return HttpResponse('false_post')
+
+def listTrip(request, userName, mode):
+	userCheck = User.objects.filter(user_name=userName)
+	if (not userCheck):
+		return JsonResponse({})
+
+	trip_response = {}
+	trip_records = []
+		
+	if (mode == 'userOnly'):
+		tripList = Trip.objects.filter(
+			user_fkey = userCheck
+		)
+
+	elif (mode == 'allUsers'):
+		tripListUser = Trip.objects.filter(
+			user_fkey = userCheck
+		)
+
+		tripListOthers = Trip.objects.exclude(
+			user_fkey = userCheck
+		).filter(
+			is_public = True
+		)
+		
+		tripList = list(chain(tripListUser, tripListOthers))
+
+	# Niepoprawny mode, zwracamy pusty obiekt JSON
+	else: 
+		return JsonResponse(trip_response)
+
+	for trip in tripList:
+		record = {"name": trip.name}
+
+		trip_records.append(record)
+
+	trip_response["array"] = trip_records
+
+	return JsonResponse(trip_response)

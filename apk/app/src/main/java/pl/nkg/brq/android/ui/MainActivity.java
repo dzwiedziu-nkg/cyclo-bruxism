@@ -24,6 +24,9 @@ package pl.nkg.brq.android.ui;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.Manifest;
 import android.content.Context;
@@ -45,12 +48,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
 
+import java.util.concurrent.ExecutionException;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
+import pl.nkg.brq.android.network.NetworkGetTripList;
 import pl.nkg.brq.android.services.SensorsService;
 
 public class MainActivity extends AppCompatActivity {
@@ -233,6 +240,26 @@ public class MainActivity extends AppCompatActivity {
             mWarningTextView.setTextSize(Math.min(5000 / record.distance, 100));
         } else {
             mWarningTextView.setVisibility(View.GONE);
+        }
+    }
+
+    public void testButton(View view){
+        Log.d("APP", "TEST---------");
+        try {
+            String response =  new NetworkGetTripList().execute("user", ConstValues.MODE_ALL_USERS).get();
+            Log.d("APP", response);
+            JSONObject obj = new JSONObject(response);
+            Log.d("APP", obj.toString());
+            JSONArray arrayJ = obj.getJSONArray("array");
+            Log.d("APP", arrayJ.toString());
+            Log.d("APP", arrayJ.get(0).toString());
+            Log.d("APP", arrayJ.get(1).toString());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }
