@@ -33,6 +33,10 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
     protected String doInBackground(Object... urls) {
         try {
+            if ( ConstValues.DATA_SENDING_ACTIVE == false){
+                return "true";
+            }
+
             JSONObject jsonObjectMain = (JSONObject) urls[0];
             String userName = (String) urls[1];
             String name = (String) urls[2];

@@ -205,6 +205,7 @@ public class SensorsService extends Service {
                 jsonObject.put("latitude", record.latitude);
                 jsonArrayRecord.put(jsonObject);
 
+/*
                 jsonObject = new JSONObject();
                 jsonObject.put("altitude", record.altitude);
                 jsonArrayRecord.put(jsonObject);
@@ -228,6 +229,12 @@ public class SensorsService extends Service {
                 jsonObject = new JSONObject();
                 jsonObject.put("distance", record.distance);
                 jsonArrayRecord.put(jsonObject);
+*/
+
+
+                jsonObject = new JSONObject();
+                jsonObject.put("grade", getRating(record.soundNoise, record.shake));
+                jsonArrayRecord.put(jsonObject);
 
                 jsonArrayMain.put(jsonArrayRecord);
             }
@@ -237,7 +244,46 @@ public class SensorsService extends Service {
             e.printStackTrace();
         }
 
+        Log.d("APP", jsonObjectMain.toString());
         sendFile();
+    }
+
+    //zwraca ocenę z zakresu 1-10. 1 to najlepsza, 10 najgorsza
+    public double getRating(double soundNoise, double shake){
+        int count = 0;
+        double noiseGrade = 0.0;
+        double shakeGrade = 0.0;
+
+        //wystawienie oceny na podstawie dźwięku
+        if(! Double.isNaN(soundNoise)) {
+            count++;
+            noiseGrade = (soundNoise - 20.0) / 10;
+
+            //normalizacja danych dźwiękowych do oceny z zakresu 1-10
+            noiseGrade = Math.min(noiseGrade, 10.0);
+            noiseGrade = Math.max(noiseGrade, 1.0);
+        }
+
+        //wystawienie oceny na podstawie wstrząsów
+        if(! Double.isNaN(shake)) {
+            count++;
+            shakeGrade = shake * 3 / 10;
+
+            //normalizacja danych do oceny z zakresu 1-10
+            shakeGrade = Math.min(shakeGrade, 10.0);
+            shakeGrade = Math.max(shakeGrade, 1.0);
+        }
+
+        double grade;
+        if( count > 0 ) {
+            grade = (noiseGrade + shakeGrade) / count;
+        } else {
+            grade = 0.0;
+        }
+
+        grade = (double) Math.round(grade * 10) / 10;
+
+        return grade;
     }
 
     @Override

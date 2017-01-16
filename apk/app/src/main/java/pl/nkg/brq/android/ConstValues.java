@@ -11,4 +11,6 @@ public class ConstValues {
     public static final String MODE_USER_ONLY = "userOnly";
     public static final String MODE_ALL_USERS = "allUsers";
 
+    public static final boolean DATA_SENDING_ACTIVE = true;
+
 }
