@@ -47,6 +47,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.network.NetworkAccessLogin;
@@ -171,72 +172,50 @@ public class SensorsService extends Service {
 
         Value distance = mDistance.getValue();
         record.distance  = (int)(distance.getTimestampOfUpdated() + 2 * saveDuration < System.currentTimeMillis() ? distance.getValue() : distance.getMinValue());
-        //record.distance = (int) mDistance.getValue().getMinValue();
         record.soundNoise = mNoise.getValue().getValue();
         record.shake = mQuake.getValue().getMaxValue();
 
-        if (!Double.isInfinite(record.soundNoise)){
-            mQueue.add(record);
-            EventBus.getDefault().post(record);
+        //zabezpiecznie przed zapisywaniem niepoprawnych danych dźwiękowych
+        if (Double.isInfinite(record.soundNoise)){
+            return;
         }
+
+        mQueue.add(record);
+        EventBus.getDefault().post(record);
     }
 
     private void writeRecord() {
         jsonObjectMain = new JSONObject();
         JSONArray jsonArrayMain = new JSONArray();
-        JSONArray jsonArrayRecord;
-        JSONObject jsonObject;
+        JSONObject jsonRecord;
 
         try {
             while (mQueue.size() > 0) {
                 SensorsRecord record = mQueue.poll();
 
-                jsonArrayRecord = new JSONArray();
+                //zabezpieczenie przed zapisywaniem danych zanim złapie GPS
+                if (!ConstValues.SAVE_EMPTY_DATA && record.latitude == 0.0 && record.longitude == 0.0 ){
+                    continue;
+                }
 
-                jsonObject = new JSONObject();
-                jsonObject.put("timestamp", record.timestamp);
-                jsonArrayRecord.put(jsonObject);
+                jsonRecord = new JSONObject();
 
-                jsonObject = new JSONObject();
-                jsonObject.put("longitude", record.longitude);
-                jsonArrayRecord.put(jsonObject);
-
-                jsonObject = new JSONObject();
-                jsonObject.put("latitude", record.latitude);
-                jsonArrayRecord.put(jsonObject);
+                jsonRecord.put("timestamp", record.timestamp);
+                jsonRecord.put("longitude", record.longitude);
+                jsonRecord.put("latitude", record.latitude);
 
 /*
-                jsonObject = new JSONObject();
-                jsonObject.put("altitude", record.altitude);
-                jsonArrayRecord.put(jsonObject);
-
-                jsonObject = new JSONObject();
-                jsonObject.put("accuracy", record.accuracy);
-                jsonArrayRecord.put(jsonObject);
-
-                jsonObject = new JSONObject();
-                jsonObject.put("speed", record.speed);
-                jsonArrayRecord.put(jsonObject);
-
-                jsonObject = new JSONObject();
-                jsonObject.put("soundNoise", record.soundNoise);
-                jsonArrayRecord.put(jsonObject);
-
-                jsonObject = new JSONObject();
-                jsonObject.put("shake", record.shake);
-                jsonArrayRecord.put(jsonObject);
-
-                jsonObject = new JSONObject();
-                jsonObject.put("distance", record.distance);
-                jsonArrayRecord.put(jsonObject);
+                jsonRecord.put("altitude", record.altitude);
+                jsonRecord.put("accuracy", record.accuracy);
+                jsonRecord.put("speed", record.speed);
+                jsonRecord.put("soundNoise", record.soundNoise);
+                jsonRecord.put("shake", record.shake);
+                jsonRecord.put("distance", record.distance);
 */
 
+                jsonRecord.put("rating", getRating(record.soundNoise, record.shake));
 
-                jsonObject = new JSONObject();
-                jsonObject.put("grade", getRating(record.soundNoise, record.shake));
-                jsonArrayRecord.put(jsonObject);
-
-                jsonArrayMain.put(jsonArrayRecord);
+                jsonArrayMain.put(jsonRecord);
             }
 
             jsonObjectMain.put("trip_data", jsonArrayMain);
@@ -244,7 +223,6 @@ public class SensorsService extends Service {
             e.printStackTrace();
         }
 
-        Log.d("APP", jsonObjectMain.toString());
         sendFile();
     }
 

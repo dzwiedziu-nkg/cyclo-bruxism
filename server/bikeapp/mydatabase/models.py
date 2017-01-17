@@ -22,10 +22,11 @@ class Trip(models.Model):
 		return self.name
 
 class Rating(models.Model):
-	latitude = models.IntegerField()
-	longitude = models.IntegerField()
+	latitude = models.FloatField()
+	longitude = models.FloatField()
 
-	rating = models.IntegerField()
+	rating = models.FloatField()
+	count = models.IntegerField()
 
 	def __str__(self):
-		return self.rating
+		return str(self.latitude) + ' - ' + str(self.longitude)

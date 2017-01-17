@@ -58,6 +58,7 @@ import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
 import pl.nkg.brq.android.network.NetworkGetTripList;
+import pl.nkg.brq.android.network.NetworkGetTrip;
 import pl.nkg.brq.android.services.SensorsService;
 
 public class MainActivity extends AppCompatActivity {
@@ -251,9 +252,17 @@ public class MainActivity extends AppCompatActivity {
             JSONObject obj = new JSONObject(response);
             Log.d("APP", obj.toString());
             JSONArray arrayJ = obj.getJSONArray("array");
-            Log.d("APP", arrayJ.toString());
             Log.d("APP", arrayJ.get(0).toString());
-            Log.d("APP", arrayJ.get(1).toString());
+
+            JSONObject objectB = new JSONObject(arrayJ.get(0).toString());
+            Log.d("APP", Integer.toString(objectB.getInt("id")));
+
+            String responseB =  new NetworkGetTrip().execute(Integer.toString(objectB.getInt("id"))).get();
+            JSONObject objectC = new JSONObject(responseB);
+            Log.d("APP", objectC.toString());
+            JSONObject objectD =  new JSONObject(objectC.getString("trip_data"));
+            Log.d("APP",objectD.toString());
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
