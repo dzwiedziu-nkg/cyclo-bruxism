@@ -24,12 +24,8 @@ package pl.nkg.brq.android.ui;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -38,7 +34,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.preference.ListPreference;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,17 +43,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
 
-import java.util.concurrent.ExecutionException;
-
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
-import pl.nkg.brq.android.network.NetworkGetTripList;
-import pl.nkg.brq.android.network.NetworkGetTrip;
 import pl.nkg.brq.android.services.SensorsService;
 
 public class MainActivity extends AppCompatActivity {
@@ -246,29 +236,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void testButton(View view){
         Log.d("APP", "TEST---------");
-        try {
-            String response =  new NetworkGetTripList().execute("user", ConstValues.MODE_ALL_USERS).get();
-            Log.d("APP", response);
-            JSONObject obj = new JSONObject(response);
-            Log.d("APP", obj.toString());
-            JSONArray arrayJ = obj.getJSONArray("array");
-            Log.d("APP", arrayJ.get(0).toString());
 
-            JSONObject objectB = new JSONObject(arrayJ.get(0).toString());
-            Log.d("APP", Integer.toString(objectB.getInt("id")));
-
-            String responseB =  new NetworkGetTrip().execute(Integer.toString(objectB.getInt("id"))).get();
-            JSONObject objectC = new JSONObject(responseB);
-            Log.d("APP", objectC.toString());
-            JSONObject objectD =  new JSONObject(objectC.getString("trip_data"));
-            Log.d("APP",objectD.toString());
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 }

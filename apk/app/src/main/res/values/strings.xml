@@ -63,4 +63,5 @@
     <string name="pref_sharing_title">Sharing</string>
     <string name="pref_sharing_key">public_availability</string>
     <string name="pref_sharing_summary">Check if you want to share your data with others!</string>
+    <string name="title_activity_trip_map">Map</string>
 </resources>

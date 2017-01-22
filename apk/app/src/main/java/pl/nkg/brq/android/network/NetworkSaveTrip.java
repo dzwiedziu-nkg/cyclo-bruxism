@@ -57,6 +57,7 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
+            urlConnection.setReadTimeout(ConstValues.CONNECTION_TIMEOUT);
             urlConnection.connect();
 
             DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());

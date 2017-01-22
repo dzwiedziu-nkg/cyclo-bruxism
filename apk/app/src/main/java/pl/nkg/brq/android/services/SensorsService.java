@@ -31,6 +31,8 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
@@ -85,7 +87,9 @@ public class SensorsService extends Service {
 
     private JSONObject jsonObjectMain;
     private String fileName;
-    Intent myIntent;
+
+    private SharedPreferences preferences;
+    private Intent myIntent;
 
     private synchronized boolean isFinish() {
         return mFinish;
@@ -119,6 +123,8 @@ public class SensorsService extends Service {
         mDistance.start();
         mLocation.start();
         mQueue = new LinkedBlockingQueue<>();
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         setFinish(false);
 
@@ -223,7 +229,59 @@ public class SensorsService extends Service {
             e.printStackTrace();
         }
 
-        sendFile();
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        String connectionType = preferences.getString(getString(R.string.pref_connection_key), "");
+
+        //wysyłanie danych przez wifi
+        if (activeNetworkInfo != null && activeNetworkInfo.isConnected() && activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+            sendFile();
+        //wysyłanie danych przez internet, jeżeli użytkownik sie zgodził
+        } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected() && connectionType.equals("internet")){
+            sendFile();
+        //lokalne zapisanie danych
+        } else {
+            saveFile();
+        }
+    }
+
+    public void sendFile() {
+        String userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
+        String name = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
+        String bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
+        String phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
+        String isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
+
+        //zapasowa nazwa jeśli żadnej nie podano:
+        if (name.equals("")) {
+            name = fileName;
+        }
+
+        try {
+            String response =  new NetworkSaveTrip().execute(jsonObjectMain, userName, name, bikeType, phonePlacement, isPublic).get();
+
+            if ( response.equals("true") ) {
+                makeToast(getString(R.string.upload_success_toast));
+                return;
+            } else if (response.equals("false_invalid_form")){
+                Log.d("MyApp", "Upload failed");
+            } else if (response.equals("false_post")){
+                Log.d("MyApp", "Post failed");
+            } else if (response.equals("false_timeout")){
+                makeToast(getString(R.string.timeout_exception_toast));
+            }
+
+            //zapisanie pliku na dysku w przypadku błędu przesyłania
+            saveFile();
+        } catch (Exception e){
+            Log.e("MyApp", e.getMessage());
+        }
+    }
+
+    private void saveFile(){
+
+        Log.d("APP", "Foo");
+        Log.d("APP", "SaveFile");
     }
 
     //zwraca ocenę z zakresu 1-10. 1 to najlepsza, 10 najgorsza
@@ -276,37 +334,6 @@ public class SensorsService extends Service {
         mWriteThread.interrupt();
     }
 
-    public void sendFile() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        String userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
-        String name = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
-        String bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
-        String phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
-        String isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
-
-        //zapasowa nazwa jeśli żadnej nie podano:
-        if (name.equals("")) {
-            name = fileName;
-        }
-
-
-        try {
-            String response =  new NetworkSaveTrip().execute(jsonObjectMain, userName, name, bikeType, phonePlacement, isPublic).get();
-
-            if ( response.equals("true") ) {
-                makeToast(getString(R.string.upload_success_toast));
-            } else if (response.equals("false_invalid_form")){
-                Log.d("MyApp", "Upload failed");
-            } else if (response.equals("false_post")){
-                Log.d("MyApp", "Post failed");
-            } else if (response.equals("false_timeout")){
-                makeToast(getString(R.string.timeout_exception_toast));
-            }
-        } catch (Exception e){
-            Log.e("MyApp", e.getMessage());
-        }
-    }
 
     private void makeToast(final String text){
         handler.post(new Runnable() {
