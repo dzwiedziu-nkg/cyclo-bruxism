@@ -136,3 +136,22 @@ def getTrip(request, id):
 		}
 
 	return JsonResponse(tripResponse)
+
+# Zwraca rating
+def getRating(request):
+	ratingObjects = Rating.objects.filter()
+
+	ratingResponse = {}
+	ratingRecords = []
+
+	for rating in ratingObjects:
+		record = {
+			"latitude": rating.latitude,
+			"longitude": rating.longitude,
+			"rating": round((rating.rating / rating.count), 2)
+		}
+
+		ratingRecords.append(record)
+
+	ratingResponse["array"] = ratingRecords
+	return JsonResponse(ratingResponse)

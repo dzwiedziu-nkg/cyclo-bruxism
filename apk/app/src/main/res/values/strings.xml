@@ -21,10 +21,12 @@
     <string name="registration_failure_toast">Name alredy in use!</string>
     <string name="registartion_success_toast">Registration successful!</string>
 
-    <string name="service_start">Service start</string>
-    <string name="service_end">Service destroyed</string>
+    <string name="service_start">Start!</string>
+    <string name="service_end">End!</string>
     <string name="timeout_exception_toast">Unable to connect with server...</string>
     <string name="upload_success_toast">Upload successful!</string>
+
+    <string name="button_dialog_select">Select</string>
 
     <string name="button_on_text">Start tracking!</string>
     <string name="button_off_text">Stop tracking!</string>
@@ -64,4 +66,9 @@
     <string name="pref_sharing_key">public_availability</string>
     <string name="pref_sharing_summary">Check if you want to share your data with others!</string>
     <string name="title_activity_trip_map">Map</string>
+    <string name="title_activity_trip_maps">Map</string>
+    <string name="file_saved_locally_toast">File saved locally...</string>
+    <string name="action_selecet_trip">Select trip</string>
+    <string name="action_selecet_trip_user_only">Select your trip</string>
+    <string name="trip_array_key">tripArray</string>
 </resources>

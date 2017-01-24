@@ -71,7 +71,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         //domyslne chaslo bez dostepu do internetu
-        if ( userName.equals("ad") && password.equals("ad") ) {
+        if ( userName.equals("admin") && password.equals("admin") ) {
             startMainActivity();
             return;
         }

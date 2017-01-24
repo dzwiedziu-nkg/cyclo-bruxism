@@ -24,8 +24,12 @@ package pl.nkg.brq.android.ui;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -38,17 +42,29 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
+import pl.nkg.brq.android.maps.TripMapsActivity;
+import pl.nkg.brq.android.maps.TripObject;
+import pl.nkg.brq.android.network.NetworkGetRating;
+import pl.nkg.brq.android.network.NetworkGetTrip;
+import pl.nkg.brq.android.network.NetworkGetTripList;
 import pl.nkg.brq.android.services.SensorsService;
 
 public class MainActivity extends AppCompatActivity {
@@ -131,24 +147,31 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
-        if (itemId == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
-            startActivity(settingsIntent);
-            return true;
-        }
+        switch (itemId){
+            case R.id.action_selecet_trip:
+                selectTripDialog(ConstValues.MODE_ALL_USERS);
+                return true;
 
-        if (itemId == R.id.action_quit) {
-            finish();
-            return true;
-        }
+            case R.id.action_selecet_trip_user_only:
+                selectTripDialog(ConstValues.MODE_USER_ONLY);
+                return true;
 
-        if (itemId == R.id.action_logout) {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(getString(R.string.pref_user_logged_key), "");
-            editor.commit();
+            case R.id.action_settings:
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivity(settingsIntent);
+                return true;
 
-            finish();
-            return true;
+            case R.id.action_quit:
+                finish();
+                return true;
+
+            case R.id.action_logout:
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(getString(R.string.pref_user_logged_key), "");
+                editor.commit();
+
+                finish();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -237,5 +260,85 @@ public class MainActivity extends AppCompatActivity {
     public void testButton(View view){
         Log.d("APP", "TEST---------");
 
+        try {
+            String response =  new NetworkGetRating().execute().get();
+            Log.d("APP", response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public void selectTripDialog(String mode){
+        final Dialog tripSelectDialog = new Dialog(this);
+        tripSelectDialog.setContentView(R.layout.select_trip_dialog);
+
+        tripSelectDialog.show();
+
+        String userName = sharedPreferences.getString(getString(R.string.pref_user_logged_key), "");
+        ArrayList<TripObject> tripObjects = new ArrayList<>();
+
+        try {
+            String response =  new NetworkGetTripList().execute(userName, mode).get();
+            JSONObject jsonResponse = new JSONObject(response);
+            JSONArray responseArray = jsonResponse.getJSONArray("array");
+
+            for (int i = 0; i < responseArray.length(); i++) {
+                JSONObject value = responseArray.getJSONObject(i);
+                tripObjects.add(new TripObject(
+                        value.getInt("id"),
+                        value.getString("name")
+                ));
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final Spinner tripSpinner = (Spinner) tripSelectDialog.findViewById(R.id.trip_spinner);
+        ArrayAdapter<TripObject> adapter = new ArrayAdapter<TripObject>(
+                this,
+                android.R.layout.simple_spinner_item,
+                tripObjects
+        );
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        tripSpinner.setAdapter(adapter);
+
+        Button selectButton = (Button)tripSelectDialog.findViewById(R.id.button_select_trip);
+        selectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TripObject tripObject = (TripObject)tripSpinner.getSelectedItem();
+                JSONArray tripDataArray = new JSONArray();
+
+                try {
+                    String tripResponseString = new NetworkGetTrip().execute(Integer.toString(tripObject.getId())).get();
+                    JSONObject tripResponseJson = new JSONObject(tripResponseString);
+
+                    String tripDataString = tripResponseJson.getString("trip_data");
+                    tripDataArray = (new JSONObject(tripDataString)).getJSONArray("trip_data");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
+                mapIntent.putExtra(getString(R.string.trip_array_key), tripDataArray.toString());
+
+                startActivity(mapIntent);
+
+                tripSelectDialog.dismiss();
+            }
+        });
     }
 }

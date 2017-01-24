@@ -42,6 +42,9 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -139,11 +142,13 @@ public class SensorsService extends Service {
 
         mWriteThread = new Thread(new Runnable() {
 
-
             @Override
             public void run() {
-                //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/brq_" + dateFormat.format(new Date()) + ".csv");
-                fileName = "brq_" + dateFormat.format(new Date());
+                fileName = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
+                //zapasowa nazwa jeśli żadnej nie podano:
+                if( fileName.equals("")) {
+                    fileName = "brq_" + dateFormat.format(new Date());
+                }
 
                 while (!isFinish()) {
                     try {
@@ -247,18 +252,13 @@ public class SensorsService extends Service {
 
     public void sendFile() {
         String userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
-        String name = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
+        String name = fileName;
         String bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
         String phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
         String isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
 
-        //zapasowa nazwa jeśli żadnej nie podano:
-        if (name.equals("")) {
-            name = fileName;
-        }
-
         try {
-            String response =  new NetworkSaveTrip().execute(jsonObjectMain, userName, name, bikeType, phonePlacement, isPublic).get();
+            String response =  new NetworkSaveTrip().execute(this.jsonObjectMain, userName, name, bikeType, phonePlacement, isPublic).get();
 
             if ( response.equals("true") ) {
                 makeToast(getString(R.string.upload_success_toast));
@@ -279,9 +279,22 @@ public class SensorsService extends Service {
     }
 
     private void saveFile(){
+        File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() +
+                "/" + this.fileName + ".json");
 
-        Log.d("APP", "Foo");
-        Log.d("APP", "SaveFile");
+        try {
+            FileOutputStream fOut = new FileOutputStream(file, true);
+            OutputStreamWriter osw = new OutputStreamWriter(fOut);
+
+            osw.write(this.jsonObjectMain.toString());
+
+            osw.flush();
+            osw.close();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+
+        makeToast(getString(R.string.file_saved_locally_toast));
     }
 
     //zwraca ocenę z zakresu 1-10. 1 to najlepsza, 10 najgorsza

@@ -1,0 +1,25 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <Spinner
+        android:id="@+id/trip_spinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:padding="8dp"/>
+
+    <Button
+        android:id="@+id/button_select_trip"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/trip_spinner"
+        style="@style/Theme.Design.Light"
+        android:background="@drawable/main_button"
+        android:layout_centerHorizontal="true"
+        android:text="@string/button_dialog_select"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"/>
+
+</RelativeLayout>
