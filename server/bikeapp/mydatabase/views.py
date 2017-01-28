@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from itertools import chain
 
 import json
+import math
 
 from .models import User
 from .models import Trip
@@ -45,25 +46,72 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic):
 			if isPublic == 'true':
 				boolIsPublic = True
 
+			trip_object = json.loads(str(request.body, "utf-8"))
+			trip_array = trip_object["trip_data"]
+
+			trip_data = []
+			trip_body = {}
+
+			for record in trip_array:
+				latitude = round(record["latitude"], 4)
+				longitude = round(record["longitude"], 4)
+				rating = ratingCalculation(record["soundNoise"], record["shake"])
+
+				record = {
+					"latitude": latitude,
+					"longitude": longitude,
+					"rating": rating
+				}
+
+				trip_data.append(record)
+				saveRating(latitude, longitude, rating)
+
+			trip_body["trip_data"] = trip_data
+
 			Trip.objects.create(
 				user_fkey = user.get(), 
 				name = name, 
 				bike_used = bikeType, 
 				phone_placement = phonePlacement, 
 				is_public = boolIsPublic, 
-				trip_data = request.body)
-
-			trip_object = json.loads(str(request.body, "utf-8"))
-			trip_array = trip_object["trip_data"]
-
-			for record in trip_array:
-				saveRating(round(record["latitude"], 4), round(record["longitude"], 4), record["rating"])
+				trip_data = trip_body)
 
 			return HttpResponse('true')
 
 		return HttpResponse('false_invalid_form')
 
 	return HttpResponse('false_post')
+
+# Zwraca ocenę z zakresu 1-10. 1 to najlepsza, 10 najgorsza
+def ratingCalculation(soundNoise, shake):
+	count = 0
+	noiseGrade = 0.0
+	shakeGrade = 0.0
+
+	# wystawienie oceny na podstawie dźwięku
+	if (not math.isnan(soundNoise)):
+		count += 1
+		noiseGrade = (soundNoise - 10.0) / 10
+
+		# normalizacja danych dźwiękowych do oceny z zakresu 1-10
+		noiseGrade = min(noiseGrade, 10.0)
+		noiseGrade = max(noiseGrade, 1.0)
+
+	# wystawienie oceny na podstawie wstrząsów
+	if (not math.isnan(shake)):
+		count += 1
+		shakeGrade = shake * 4 / 10
+
+		# normalizacja danych do oceny z zakresu 1-10
+		shakeGrade = min(shakeGrade, 10.0);
+		shakeGrade = max(shakeGrade, 1.0);
+
+	grade = 0.0
+	if ( count > 0 ):
+		grade = (noiseGrade + shakeGrade) / count
+
+	grade = round(grade, 1)
+	return grade
 
 def saveRating(latitude, longitude, rating):
 	try:

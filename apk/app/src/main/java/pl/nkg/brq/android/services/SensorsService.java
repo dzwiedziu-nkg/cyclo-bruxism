@@ -211,20 +211,17 @@ public class SensorsService extends Service {
 
                 jsonRecord = new JSONObject();
 
-                jsonRecord.put("timestamp", record.timestamp);
                 jsonRecord.put("longitude", record.longitude);
                 jsonRecord.put("latitude", record.latitude);
 
-/*
-                jsonRecord.put("altitude", record.altitude);
-                jsonRecord.put("accuracy", record.accuracy);
-                jsonRecord.put("speed", record.speed);
                 jsonRecord.put("soundNoise", record.soundNoise);
                 jsonRecord.put("shake", record.shake);
-                jsonRecord.put("distance", record.distance);
-*/
 
-                jsonRecord.put("rating", getRating(record.soundNoise, record.shake));
+                // jsonRecord.put("timestamp", record.timestamp);
+               // jsonRecord.put("altitude", record.altitude);
+               // jsonRecord.put("accuracy", record.accuracy);
+                //jsonRecord.put("speed", record.speed);
+                //jsonRecord.put("distance", record.distance);
 
                 jsonArrayMain.put(jsonRecord);
             }
@@ -242,7 +239,7 @@ public class SensorsService extends Service {
         if (activeNetworkInfo != null && activeNetworkInfo.isConnected() && activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
             sendFile();
         //wysyłanie danych przez internet, jeżeli użytkownik sie zgodził
-        } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected() && connectionType.equals("internet")){
+        } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected()){
             sendFile();
         //lokalne zapisanie danych
         } else {
@@ -295,44 +292,6 @@ public class SensorsService extends Service {
         }
 
         makeToast(getString(R.string.file_saved_locally_toast));
-    }
-
-    //zwraca ocenę z zakresu 1-10. 1 to najlepsza, 10 najgorsza
-    public double getRating(double soundNoise, double shake){
-        int count = 0;
-        double noiseGrade = 0.0;
-        double shakeGrade = 0.0;
-
-        //wystawienie oceny na podstawie dźwięku
-        if(! Double.isNaN(soundNoise)) {
-            count++;
-            noiseGrade = (soundNoise - 20.0) / 10;
-
-            //normalizacja danych dźwiękowych do oceny z zakresu 1-10
-            noiseGrade = Math.min(noiseGrade, 10.0);
-            noiseGrade = Math.max(noiseGrade, 1.0);
-        }
-
-        //wystawienie oceny na podstawie wstrząsów
-        if(! Double.isNaN(shake)) {
-            count++;
-            shakeGrade = shake * 3 / 10;
-
-            //normalizacja danych do oceny z zakresu 1-10
-            shakeGrade = Math.min(shakeGrade, 10.0);
-            shakeGrade = Math.max(shakeGrade, 1.0);
-        }
-
-        double grade;
-        if( count > 0 ) {
-            grade = (noiseGrade + shakeGrade) / count;
-        } else {
-            grade = 0.0;
-        }
-
-        grade = (double) Math.round(grade * 10) / 10;
-
-        return grade;
     }
 
     @Override
