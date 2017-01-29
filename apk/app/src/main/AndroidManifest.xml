@@ -48,6 +48,10 @@
         <activity
             android:name=".maps.TripMapsActivity"
             android:label="@string/title_activity_trip_maps"></activity>
+
+        <activity
+            android:name=".maps.TerrainMapsActivity"
+            android:label="@string/title_activity_trip_maps"></activity>
     </application>
 
 </manifest>

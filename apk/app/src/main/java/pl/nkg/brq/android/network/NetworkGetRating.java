@@ -23,6 +23,8 @@ public class NetworkGetRating extends AsyncTask<String, Void, String> {
             URL url = new URL(ConstValues.BASE_URL + "/mydatabase/getRating/");
 
             URLConnection urlConnection =  url.openConnection();
+            urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
+            urlConnection.setReadTimeout(ConstValues.CONNECTION_TIMEOUT);
 
             InputStream in = urlConnection.getInputStream();
             String encoding = urlConnection.getContentEncoding();

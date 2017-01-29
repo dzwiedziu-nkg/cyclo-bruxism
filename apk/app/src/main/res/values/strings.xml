@@ -71,4 +71,5 @@
     <string name="action_selecet_trip">Select trip</string>
     <string name="action_selecet_trip_user_only">Select your trip</string>
     <string name="trip_array_key">tripArray</string>
+    <string name="action_selecet_terrain">Terrain map</string>
 </resources>

@@ -18,27 +18,15 @@
         android:layout_marginRight="8dp">
 
         <Button
+            android:id="@+id/button_on"
             android:layout_width="140dp"
             android:layout_height="wrap_content"
-            android:id="@+id/button_on"
             style="@style/Theme.Design.Light"
             android:background="@drawable/main_button"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="16dp"
             android:text="@string/button_on_text" />
-
-        <Button
-            android:layout_width="140dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/button_off"
-            style="@style/Theme.Design.Light"
-            android:background="@drawable/main_button"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/button_off_text"
-            android:visibility="gone"/>
 
         <EditText
             android:id="@+id/trip_name_edit"

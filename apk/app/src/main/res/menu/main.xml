@@ -8,6 +8,9 @@
     <item android:id="@+id/action_selecet_trip_user_only" android:title="@string/action_selecet_trip_user_only"
         android:orderInCategory="101" app:showAsAction="never" />
 
+    <item android:id="@+id/action_selecet_terrain" android:title="@string/action_selecet_terrain"
+        android:orderInCategory="101" app:showAsAction="never" />
+
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="104" app:showAsAction="never" />
 

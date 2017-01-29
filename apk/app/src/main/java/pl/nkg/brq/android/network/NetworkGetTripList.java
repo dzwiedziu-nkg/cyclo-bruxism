@@ -28,6 +28,8 @@ public class NetworkGetTripList extends AsyncTask<String, Void, String> {
                     + mode);
 
             URLConnection urlConnection =  url.openConnection();
+            urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
+            urlConnection.setReadTimeout(ConstValues.CONNECTION_TIMEOUT);
 
             InputStream in = urlConnection.getInputStream();
             String encoding = urlConnection.getContentEncoding();

@@ -60,6 +60,7 @@ import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
+import pl.nkg.brq.android.maps.TerrainMapsActivity;
 import pl.nkg.brq.android.maps.TripMapsActivity;
 import pl.nkg.brq.android.maps.TripObject;
 import pl.nkg.brq.android.network.NetworkGetRating;
@@ -73,8 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Bind(R.id.button_on)
     Button mButtonOn;
-    @Bind(R.id.button_off)
-    Button mButtonOff;
     @Bind(R.id.trip_name_info)
     TextView mNameTextView;
     @Bind(R.id.speedTextView)
@@ -93,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
     EditText nameEditText;
     TextView bikeTextView;
     TextView placementTextView;
+
+    private boolean trackingToggle;
 
     SharedPreferences sharedPreferences;
 
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         nameEditText = (EditText) findViewById(R.id.trip_name_edit);
         bikeTextView = (TextView) findViewById(R.id.bike_type_info);
         placementTextView = (TextView) findViewById(R.id.phone_placement_info);
+        trackingToggle = false;
         updateDescription();
     }
 
@@ -154,6 +156,10 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_selecet_trip_user_only:
                 selectTripDialog(ConstValues.MODE_USER_ONLY);
+                return true;
+
+            case R.id.action_selecet_terrain:
+                startTerrainMap();
                 return true;
 
             case R.id.action_settings:
@@ -197,47 +203,42 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.button_on)
     public void onButtonOnClick() {
-        Intent sensorIntent = new Intent(MainActivity.this, SensorsService.class);
-        sensorIntent.putExtra(getString(R.string.trip_name_key), nameEditText.getText().toString());
+        if(trackingToggle == false) {
+            trackingToggle = true;
+            mButtonOn.setText(getString(R.string.button_off_text));
 
-        startService(sensorIntent);
+            Intent sensorIntent = new Intent(MainActivity.this, SensorsService.class);
+            sensorIntent.putExtra(getString(R.string.trip_name_key), nameEditText.getText().toString());
 
-        //TODO zapisanie ustawień rowera itp
+            startService(sensorIntent);
 
-        mNameTextView.setVisibility(View.VISIBLE);
-        mSpeedTextView.setVisibility(View.VISIBLE);
-        mAltitudeTextView.setVisibility(View.VISIBLE);
-        mShakeTextView.setVisibility(View.VISIBLE);
-        mNoiseTextView.setVisibility(View.VISIBLE);
-        mDistanceTextView.setVisibility(View.VISIBLE);
+            mNameTextView.setVisibility(View.VISIBLE);
+            mSpeedTextView.setVisibility(View.VISIBLE);
+            mAltitudeTextView.setVisibility(View.VISIBLE);
+            mShakeTextView.setVisibility(View.VISIBLE);
+            mNoiseTextView.setVisibility(View.VISIBLE);
+            mDistanceTextView.setVisibility(View.VISIBLE);
 
-        nameEditText.setVisibility(View.GONE);
+            nameEditText.setVisibility(View.GONE);
+        } else {
+            trackingToggle = false;
+            mButtonOn.setText(getString(R.string.button_on_text));
 
-        mButtonOn.setVisibility(View.GONE);
-        mButtonOff.setVisibility(View.VISIBLE);
-    }
+            stopService(new Intent(MainActivity.this, SensorsService.class));
 
-    @OnClick(R.id.button_off)
-    public void onButtonOffClick() {
-        stopService(new Intent(MainActivity.this, SensorsService.class));
+            mNameTextView.setVisibility(View.GONE);
+            mSpeedTextView.setVisibility(View.GONE);
+            mAltitudeTextView.setVisibility(View.GONE);
+            mShakeTextView.setVisibility(View.GONE);
+            mNoiseTextView.setVisibility(View.GONE);
+            mDistanceTextView.setVisibility(View.GONE);
 
-        mNameTextView.setVisibility(View.GONE);
-        mSpeedTextView.setVisibility(View.GONE);
-        mAltitudeTextView.setVisibility(View.GONE);
-        mShakeTextView.setVisibility(View.GONE);
-        mNoiseTextView.setVisibility(View.GONE);
-        mDistanceTextView.setVisibility(View.GONE);
-
-        nameEditText.setVisibility(View.VISIBLE);
-
-        mButtonOn.setVisibility(View.VISIBLE);
-        mButtonOff.setVisibility(View.GONE);
+            nameEditText.setVisibility(View.VISIBLE);
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(SensorsServiceState state) {
-
-    }
+    public void onEventMainThread(SensorsServiceState state) {}
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(SensorsRecord record) {
@@ -259,17 +260,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void testButton(View view){
         Log.d("APP", "TEST---------");
-
-        try {
-            String response =  new NetworkGetRating().execute().get();
-            Log.d("APP", response);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-
     }
 
     public void selectTripDialog(String mode){
@@ -340,5 +330,27 @@ public class MainActivity extends AppCompatActivity {
                 tripSelectDialog.dismiss();
             }
         });
+    }
+
+    public void startTerrainMap(){
+        JSONArray terrainDataArray = new JSONArray();
+
+        try {
+            String tripResponseString = new NetworkGetRating().execute().get();
+            JSONObject tripResponseJson = new JSONObject(tripResponseString);
+
+            terrainDataArray = tripResponseJson.getJSONArray("array");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Intent mapIntent = new Intent(getApplicationContext(), TerrainMapsActivity.class);
+        mapIntent.putExtra(getString(R.string.trip_array_key), terrainDataArray.toString());
+
+        startActivity(mapIntent);
     }
 }

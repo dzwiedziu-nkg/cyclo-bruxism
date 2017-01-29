@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -27,19 +28,8 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
     private GoogleMap mMap;
     private JSONArray tripDataArray;
 
-    private float cameraZoom = 18.0f;
-    private float polyWidth = 4.0f;
-
-    private final static int colorGradeOne = Color.rgb(58, 240, 22);
-    private final static int colorGradeTwo = Color.rgb(142, 240, 22);
-    private final static int colorGradeThree = Color.rgb(203, 240, 22);
-    private final static int colorGradeFour = Color.rgb(240, 240, 22);
-    private final static int colorGradeFive = Color.rgb(240, 210, 22);
-    private final static int colorGradeSix = Color.rgb(240, 182, 22);
-    private final static int colorGradeSeven = Color.rgb(240, 140, 22);
-    private final static int colorGradeEight = Color.rgb(240, 113, 22);
-    private final static int colorGradeNine = Color.rgb(240, 70, 22);
-    private final static int colorGradeTen = Color.rgb(240, 40, 22);
+    private static float cameraZoom = 18.0f;
+    private static float polyWidth = 4.0f;
 
     private int[] colorGradeList = new int[11];
 
@@ -64,16 +54,16 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
     }
 
     private void bindColors(){
-        colorGradeList[1] = colorGradeOne;
-        colorGradeList[2] = colorGradeTwo;
-        colorGradeList[3] = colorGradeThree;
-        colorGradeList[4] = colorGradeFour;
-        colorGradeList[5] = colorGradeFive;
-        colorGradeList[6] = colorGradeSix;
-        colorGradeList[7] = colorGradeSeven;
-        colorGradeList[8] = colorGradeEight;
-        colorGradeList[9] = colorGradeNine;
-        colorGradeList[10] = colorGradeTen;
+        colorGradeList[1] = ConstValues.colorGradeOne;
+        colorGradeList[2] = ConstValues.colorGradeTwo;
+        colorGradeList[3] = ConstValues.colorGradeThree;
+        colorGradeList[4] = ConstValues.colorGradeFour;
+        colorGradeList[5] = ConstValues.colorGradeFive;
+        colorGradeList[6] = ConstValues.colorGradeSix;
+        colorGradeList[7] = ConstValues.colorGradeSeven;
+        colorGradeList[8] = ConstValues.colorGradeEight;
+        colorGradeList[9] = ConstValues.colorGradeNine;
+        colorGradeList[10] = ConstValues.colorGradeTen;
     }
 
     @Override
@@ -95,26 +85,26 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
             mMap.addMarker(new MarkerOptions().position(startPosition).title("Start"));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
 
-            JSONObject valueCurrent;
-            JSONObject valueNext = tripDataArray.getJSONObject(1);
+            JSONObject currentRecord;
+            JSONObject nextRecord = tripDataArray.getJSONObject(1);
 
             for (int i = 1; i < tripDataArray.length() - 1; i++) {
-                valueCurrent = valueNext;
-                valueNext = tripDataArray.getJSONObject(i);
+                currentRecord = nextRecord;
+                nextRecord = tripDataArray.getJSONObject(i);
 
                 PolylineOptions polylineOptions = new PolylineOptions().
                         geodesic(true).
                         width(polyWidth).
-                        color(colorGradeList[((Double) valueCurrent.getDouble("rating")).intValue()]);
+                        color(colorGradeList[((Double) currentRecord.getDouble("rating")).intValue()]);
 
                 polylineOptions.add(new LatLng(
-                        valueCurrent.getDouble("latitude"),
-                        valueCurrent.getDouble("longitude")
+                        currentRecord.getDouble("latitude"),
+                        currentRecord.getDouble("longitude")
                 ));
 
                 polylineOptions.add(new LatLng(
-                        valueNext.getDouble("latitude"),
-                        valueNext.getDouble("longitude")
+                        nextRecord.getDouble("latitude"),
+                        nextRecord.getDouble("longitude")
                 ));
 
                 mMap.addPolyline(polylineOptions);
