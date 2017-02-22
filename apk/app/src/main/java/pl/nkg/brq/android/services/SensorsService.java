@@ -170,6 +170,7 @@ public class SensorsService extends Service {
         return START_STICKY;
     }
 
+    // Dodanie pojedynczego pomiaru do kolejki, oraz sprawdzanie poprawności danych
     private void putRecordInQueue() {
         SensorsRecord record = new SensorsRecord();
         final Location location = mLocation;
@@ -186,8 +187,14 @@ public class SensorsService extends Service {
         record.soundNoise = mNoise.getValue().getValue();
         record.shake = mQuake.getValue().getMaxValue();
 
-        //zabezpiecznie przed zapisywaniem niepoprawnych danych dźwiękowych
+        // zabezpiecznie przed zapisywaniem niepoprawnych danych dźwiękowych
         if (Double.isInfinite(record.soundNoise)){
+            return;
+        }
+
+        // zabezpieczenie przed zapisywaniem danych zapisanych zanim złapał GPS
+        // opcja SAVE_EMPTY_DATA pozwala na zapisa takich danych do celów testowych
+        if (!ConstValues.SAVE_EMPTY_DATA && record.latitude == 0.0 && record.longitude == 0.0 ){
             return;
         }
 
@@ -195,6 +202,7 @@ public class SensorsService extends Service {
         EventBus.getDefault().post(record);
     }
 
+    // Zapisanie danych do obiektu JSON i ich wysłanie, jeśli to możliwe
     private void writeRecord() {
         jsonObjectMain = new JSONObject();
         JSONArray jsonArrayMain = new JSONArray();
@@ -202,14 +210,8 @@ public class SensorsService extends Service {
 
         try {
             while (mQueue.size() > 0) {
-                SensorsRecord record = mQueue.poll();
-
-                //zabezpieczenie przed zapisywaniem danych zanim złapie GPS
-                if (!ConstValues.SAVE_EMPTY_DATA && record.latitude == 0.0 && record.longitude == 0.0 ){
-                    continue;
-                }
-
                 jsonRecord = new JSONObject();
+                SensorsRecord record = mQueue.poll();
 
                 jsonRecord.put("longitude", record.longitude);
                 jsonRecord.put("latitude", record.latitude);
@@ -218,12 +220,18 @@ public class SensorsService extends Service {
                 jsonRecord.put("shake", record.shake);
 
                 // jsonRecord.put("timestamp", record.timestamp);
-               // jsonRecord.put("altitude", record.altitude);
-               // jsonRecord.put("accuracy", record.accuracy);
+                // jsonRecord.put("altitude", record.altitude);
+                // jsonRecord.put("accuracy", record.accuracy);
                 //jsonRecord.put("speed", record.speed);
                 //jsonRecord.put("distance", record.distance);
 
                 jsonArrayMain.put(jsonRecord);
+            }
+
+            // Jeśli nie ma danych nic nie wysyłamy
+            if (jsonArrayMain.length() == 0){
+                makeToast(getString(R.string.nothing_to_send_toast));
+                return;
             }
 
             jsonObjectMain.put("trip_data", jsonArrayMain);
@@ -239,7 +247,7 @@ public class SensorsService extends Service {
         if (activeNetworkInfo != null && activeNetworkInfo.isConnected() && activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
             sendFile();
         //wysyłanie danych przez internet, jeżeli użytkownik sie zgodził
-        } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected()){
+        } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected() && connectionType == "internet"){
             sendFile();
         //lokalne zapisanie danych
         } else {
@@ -275,6 +283,7 @@ public class SensorsService extends Service {
         }
     }
 
+    // Zapisanie pliku z danymi lokalnie
     private void saveFile(){
         File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() +
                 "/" + this.fileName + ".json");

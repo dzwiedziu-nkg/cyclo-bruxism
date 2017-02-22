@@ -33,6 +33,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -46,7 +47,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
 
@@ -137,6 +137,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         updateDescription();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -260,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void testButton(View view){
         //test
-        Log.d("APP", "TEST---------");
+        Log.d("APP", "TEST---------" + Boolean.toString(this.trackingToggle));
     }
 
     public void selectTripDialog(String mode){
