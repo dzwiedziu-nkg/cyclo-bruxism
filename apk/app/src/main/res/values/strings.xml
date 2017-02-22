@@ -26,6 +26,7 @@
     <string name="timeout_exception_toast">Unable to connect with server...</string>
     <string name="upload_success_toast">Upload successful!</string>
 
+    <string name="title_dialog_select">Select trip:</string>
     <string name="button_dialog_select">Select</string>
 
     <string name="button_on_text">Start tracking!</string>

@@ -45,10 +45,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
                     ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                     ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                Log.w("BleActivity", "Location access not granted!");
+
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.RECORD_AUDIO,
                                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -259,12 +259,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testButton(View view){
+        //test
         Log.d("APP", "TEST---------");
     }
 
     public void selectTripDialog(String mode){
         final Dialog tripSelectDialog = new Dialog(this);
         tripSelectDialog.setContentView(R.layout.select_trip_dialog);
+
+        tripSelectDialog.setTitle(R.string.title_dialog_select);
 
         tripSelectDialog.show();
 
@@ -291,41 +294,44 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        final Spinner tripSpinner = (Spinner) tripSelectDialog.findViewById(R.id.trip_spinner);
+        final ListView tripListView = (ListView) tripSelectDialog.findViewById(R.id.trip_listview);
+
         ArrayAdapter<TripObject> adapter = new ArrayAdapter<TripObject>(
                 this,
-                android.R.layout.simple_spinner_item,
+                android.R.layout.simple_list_item_single_choice,
                 tripObjects
         );
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        tripSpinner.setAdapter(adapter);
+        tripListView.setAdapter(adapter);
+        tripListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
         Button selectButton = (Button)tripSelectDialog.findViewById(R.id.button_select_trip);
         selectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TripObject tripObject = (TripObject)tripSpinner.getSelectedItem();
-                JSONArray tripDataArray = new JSONArray();
+                if(tripListView.getCheckedItemPosition() != -1 ){
+                    TripObject tripObject = (TripObject)tripListView.getAdapter().getItem(tripListView.getCheckedItemPosition());
+                    JSONArray tripDataArray = new JSONArray();
 
-                try {
-                    String tripResponseString = new NetworkGetTrip().execute(Integer.toString(tripObject.getId())).get();
-                    JSONObject tripResponseJson = new JSONObject(tripResponseString);
 
-                    String tripDataString = tripResponseJson.getString("trip_data");
-                    tripDataArray = (new JSONObject(tripDataString)).getJSONArray("trip_data");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    try {
+                        String tripResponseString = new NetworkGetTrip().execute(Integer.toString(tripObject.getId())).get();
+                        JSONObject tripResponseJson = new JSONObject(tripResponseString);
+
+                        String tripDataString = tripResponseJson.getString("trip_data");
+                        tripDataArray = (new JSONObject(tripDataString)).getJSONArray("trip_data");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
+                    mapIntent.putExtra(getString(R.string.trip_array_key), tripDataArray.toString());
+
+                    startActivity(mapIntent);
                 }
-
-                Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
-                mapIntent.putExtra(getString(R.string.trip_array_key), tripDataArray.toString());
-
-                startActivity(mapIntent);
 
                 tripSelectDialog.dismiss();
             }
