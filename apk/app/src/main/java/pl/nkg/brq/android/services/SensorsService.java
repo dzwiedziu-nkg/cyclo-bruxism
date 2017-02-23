@@ -53,6 +53,7 @@ import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import pl.nkg.brq.android.ConstValues;
+import pl.nkg.brq.android.FileAccess;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.network.NetworkAccessLogin;
@@ -90,9 +91,14 @@ public class SensorsService extends Service {
 
     private JSONObject jsonObjectMain;
     private String fileName;
+    private String userName;
+    private String bikeType;
+    private String phonePlacement;
+    private String isPublic;
 
     private SharedPreferences preferences;
     private Intent myIntent;
+    private FileAccess fileAccess;
 
     private synchronized boolean isFinish() {
         return mFinish;
@@ -120,6 +126,7 @@ public class SensorsService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         handler = new Handler();
         myIntent = intent;
+        fileAccess = new FileAccess();
 
         mNoise.start();
         mQuake.start();
@@ -144,6 +151,10 @@ public class SensorsService extends Service {
 
             @Override
             public void run() {
+                userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
+                bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
+                phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
+                isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
                 fileName = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
                 //zapasowa nazwa jeśli żadnej nie podano:
                 if( fileName.equals("")) {
@@ -251,19 +262,19 @@ public class SensorsService extends Service {
             sendFile();
         //lokalne zapisanie danych
         } else {
-            saveFile();
+            fileAccess.saveJSONFile(jsonObjectMain , fileName, userName, bikeType, phonePlacement, isPublic);
+            makeToast(getString(R.string.file_saved_locally_toast));
         }
     }
 
     public void sendFile() {
         String userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
-        String name = fileName;
         String bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
         String phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
         String isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
 
         try {
-            String response =  new NetworkSaveTrip().execute(this.jsonObjectMain, userName, name, bikeType, phonePlacement, isPublic).get();
+            String response =  new NetworkSaveTrip().execute(this.jsonObjectMain, userName, fileName, bikeType, phonePlacement, isPublic).get();
 
             if ( response.equals("true") ) {
                 makeToast(getString(R.string.upload_success_toast));
@@ -277,30 +288,11 @@ public class SensorsService extends Service {
             }
 
             //zapisanie pliku na dysku w przypadku błędu przesyłania
-            saveFile();
+            fileAccess.saveJSONFile(jsonObjectMain , fileName, userName, bikeType, phonePlacement, isPublic);
+            makeToast(getString(R.string.file_saved_locally_toast));
         } catch (Exception e){
             Log.e("MyApp", e.getMessage());
         }
-    }
-
-    // Zapisanie pliku z danymi lokalnie
-    private void saveFile(){
-        File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile() +
-                "/" + this.fileName + ".json");
-
-        try {
-            FileOutputStream fOut = new FileOutputStream(file, true);
-            OutputStreamWriter osw = new OutputStreamWriter(fOut);
-
-            osw.write(this.jsonObjectMain.toString());
-
-            osw.flush();
-            osw.close();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-
-        makeToast(getString(R.string.file_saved_locally_toast));
     }
 
     @Override

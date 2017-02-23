@@ -17,6 +17,7 @@ public class ConstValues {
     public static final boolean SAVE_EMPTY_DATA = false;
 
     public static final String API_KEY = "AIzaSyBZGDRVjIgsqDaxBhkOCXkNCoLWNYEPw78";
+    public static final String DIRECTORY_NAME = "RoadTester";
 
     public static final int colorGradeOne = Color.rgb(58, 240, 22);
     public static final int colorGradeTwo = Color.rgb(142, 240, 22);

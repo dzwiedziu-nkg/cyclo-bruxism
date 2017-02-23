@@ -36,6 +36,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -50,6 +51,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -57,6 +59,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pl.nkg.brq.android.ConstValues;
+import pl.nkg.brq.android.FileAccess;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
@@ -66,6 +69,7 @@ import pl.nkg.brq.android.maps.TripObject;
 import pl.nkg.brq.android.network.NetworkGetRating;
 import pl.nkg.brq.android.network.NetworkGetTrip;
 import pl.nkg.brq.android.network.NetworkGetTripList;
+import pl.nkg.brq.android.services.FileBacklogUploadService;
 import pl.nkg.brq.android.services.SensorsService;
 
 public class MainActivity extends AppCompatActivity {
@@ -265,7 +269,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void testButton(View view){
         //test
-        Log.d("APP", "TEST---------" + Boolean.toString(this.trackingToggle));
+        Log.d("APP", "TEST---------");
+
+        FileAccess fileAccess = new FileAccess();
+        File[] fileList = fileAccess.getAllSavedData();
+
+        /*
+        Log.d("APP", "MAIN");
+        for (int i = 0; i < fileList.length; i++){
+            Log.d("Files", "FileName:" + fileList[i].getName());
+            Log.d("Files", "File:" + fileList[i].toString());
+            Log.d("Files", "Size:" + fileList[i].length());
+        }
+        */
+
+        Intent fileUploadIntent = new Intent(MainActivity.this, FileBacklogUploadService.class);
+        fileUploadIntent.putExtra(getString(R.string.file_list_key), fileList);
+
+        startService(fileUploadIntent);
     }
 
     public void selectTripDialog(String mode){
