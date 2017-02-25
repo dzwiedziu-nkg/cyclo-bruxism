@@ -30,10 +30,13 @@ import org.json.JSONObject;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -50,6 +53,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -135,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         placementTextView = (TextView) findViewById(R.id.phone_placement_info);
         trackingToggle = false;
         updateDescription();
+        sendStoredFiles();
     }
 
     @Override
@@ -204,6 +209,36 @@ public class MainActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
+    // Wyszukanie zapisanych lokalnie plików i ich wysłanie jeśli to możliwe
+    protected void sendStoredFiles(){
+        FileAccess fileAccess = new FileAccess();
+        ArrayList<File> fileList = fileAccess.getAllSavedData();
+
+        // Sprawdzamy czy są dane do wysłania
+        if (fileList.isEmpty()){
+            return;
+        }
+
+        // Pobieramy info o dostępnych połaczeniach
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        String connectionType = sharedPreferences.getString(getString(R.string.pref_connection_key), "");
+
+        // Sprawdzamy czy jest połaczenie
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+           return;
+        }
+
+        // Sprawdzamy czy połączenie odpowiada temu wybranemu przez użytkownika
+        if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI || connectionType.equals("internet")){
+            Intent fileUploadIntent = new Intent(this, FileBacklogUploadService.class);
+            fileUploadIntent.putExtra(getString(R.string.file_list_key), fileList);
+
+            startService(fileUploadIntent);
+            Toast.makeText(this, R.string.local_data_upload_toast, Toast.LENGTH_LONG).show();
+        }
+    }
+
     //Opis jakiego rowera używamy itp...
     protected void updateDescription() {
         bikeTextView.setText(getString(R.string.bike_type_info) + sharedPreferences.getString(getString(R.string.pref_bike_key), ""));
@@ -270,23 +305,6 @@ public class MainActivity extends AppCompatActivity {
     public void testButton(View view){
         //test
         Log.d("APP", "TEST---------");
-
-        FileAccess fileAccess = new FileAccess();
-        File[] fileList = fileAccess.getAllSavedData();
-
-        /*
-        Log.d("APP", "MAIN");
-        for (int i = 0; i < fileList.length; i++){
-            Log.d("Files", "FileName:" + fileList[i].getName());
-            Log.d("Files", "File:" + fileList[i].toString());
-            Log.d("Files", "Size:" + fileList[i].length());
-        }
-        */
-
-        Intent fileUploadIntent = new Intent(MainActivity.this, FileBacklogUploadService.class);
-        fileUploadIntent.putExtra(getString(R.string.file_list_key), fileList);
-
-        startService(fileUploadIntent);
     }
 
     public void selectTripDialog(String mode){

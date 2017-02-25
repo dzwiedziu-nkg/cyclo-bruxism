@@ -56,7 +56,6 @@ import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.FileAccess;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
-import pl.nkg.brq.android.network.NetworkAccessLogin;
 import pl.nkg.brq.android.network.NetworkSaveTrip;
 import pl.nkg.brq.android.sensors.Distance;
 import pl.nkg.brq.android.sensors.DistanceBluetooth;
@@ -258,7 +257,7 @@ public class SensorsService extends Service {
         if (activeNetworkInfo != null && activeNetworkInfo.isConnected() && activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
             sendFile();
         //wysyłanie danych przez internet, jeżeli użytkownik sie zgodził
-        } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected() && connectionType == "internet"){
+        } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected() && connectionType.equals("internet")){
             sendFile();
         //lokalne zapisanie danych
         } else {

@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 
 import pl.nkg.brq.android.services.FileBacklogUploadService;
 import pl.nkg.brq.android.ui.MainActivity;
@@ -60,11 +61,16 @@ public class FileAccess {
     }
 
     // Zwraca listę zapisanych plików
-    public File[] getAllSavedData(){
+    public ArrayList<File> getAllSavedData(){
         this.createDirectory();
 
         File folder = new File(Environment.getExternalStorageDirectory() + "/" + ConstValues.DIRECTORY_NAME);
-        File[] fileList = folder.listFiles();
+        File[] fileArray = folder.listFiles();
+        ArrayList<File> fileList = new ArrayList<File>();
+
+        for( File file : fileArray){
+            fileList.add(file);
+        }
 
         return fileList;
     }
