@@ -26,7 +26,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -34,17 +33,12 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -53,7 +47,7 @@ import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import pl.nkg.brq.android.ConstValues;
-import pl.nkg.brq.android.FileAccess;
+import pl.nkg.brq.android.files.FileAccess;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.network.NetworkSaveTrip;
@@ -155,6 +149,7 @@ public class SensorsService extends Service {
                 phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
                 isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
                 fileName = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
+
                 //zapasowa nazwa jeśli żadnej nie podano:
                 if( fileName.equals("")) {
                     fileName = "brq_" + dateFormat.format(new Date());

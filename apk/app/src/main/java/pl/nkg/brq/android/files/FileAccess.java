@@ -1,9 +1,6 @@
-package pl.nkg.brq.android;
+package pl.nkg.brq.android.files;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Environment;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,8 +10,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
-import pl.nkg.brq.android.services.FileBacklogUploadService;
-import pl.nkg.brq.android.ui.MainActivity;
+import pl.nkg.brq.android.ConstValues;
 
 /**
  * Created by aaa on 2017-02-23.

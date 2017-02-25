@@ -39,7 +39,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -63,7 +62,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pl.nkg.brq.android.ConstValues;
-import pl.nkg.brq.android.FileAccess;
+import pl.nkg.brq.android.files.FileAccess;
 import pl.nkg.brq.android.R;
 import pl.nkg.brq.android.events.SensorsRecord;
 import pl.nkg.brq.android.events.SensorsServiceState;
@@ -73,7 +72,7 @@ import pl.nkg.brq.android.maps.TripObject;
 import pl.nkg.brq.android.network.NetworkGetRating;
 import pl.nkg.brq.android.network.NetworkGetTrip;
 import pl.nkg.brq.android.network.NetworkGetTripList;
-import pl.nkg.brq.android.services.FileBacklogUploadService;
+import pl.nkg.brq.android.files.FileBacklogUpload;
 import pl.nkg.brq.android.services.SensorsService;
 
 public class MainActivity extends AppCompatActivity {
@@ -231,10 +230,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Sprawdzamy czy połączenie odpowiada temu wybranemu przez użytkownika
         if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI || connectionType.equals("internet")){
-            Intent fileUploadIntent = new Intent(this, FileBacklogUploadService.class);
-            fileUploadIntent.putExtra(getString(R.string.file_list_key), fileList);
+            Log.d("APP", "START");
+            new FileBacklogUpload(getApplicationContext()).execute(fileList);
 
-            startService(fileUploadIntent);
             Toast.makeText(this, R.string.local_data_upload_toast, Toast.LENGTH_LONG).show();
         }
     }

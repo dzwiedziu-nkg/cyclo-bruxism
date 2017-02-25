@@ -76,4 +76,5 @@
     <string name="nothing_to_send_toast">Nothing to send!</string>
     <string name="file_list_key">fileList</string>
     <string name="local_data_upload_toast">Uploading local data...</string>
+    <string name="backlog_file_sent_toast">Backlog file sent!</string>
 </resources>

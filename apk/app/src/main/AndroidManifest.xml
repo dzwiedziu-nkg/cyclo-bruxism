@@ -44,7 +44,7 @@
             android:exported="false" />
 
         <service
-            android:name=".services.FileBacklogUploadService"/>
+            android:name=".files.FileBacklogUpload"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
