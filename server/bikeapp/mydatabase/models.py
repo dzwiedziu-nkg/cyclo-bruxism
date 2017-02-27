@@ -16,7 +16,7 @@ class Trip(models.Model):
 	bike_used = models.CharField(max_length=40)
 	phone_placement = models.CharField(max_length=40)
 
-	trip_data = models.TextField()
+	trip_data = models.FileField(upload_to='tripData/')
 
 	def __str__(self):
 		return self.name

@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from itertools import chain
+from django.core.files.base import ContentFile
 
 import json
 import math
@@ -68,13 +69,18 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic):
 
 			trip_body["trip_data"] = trip_data
 
-			Trip.objects.create(
+			newTrip = Trip(
 				user_fkey = user.get(), 
 				name = name, 
 				bike_used = bikeType, 
 				phone_placement = phonePlacement, 
-				is_public = boolIsPublic, 
-				trip_data = trip_body)
+				is_public = boolIsPublic)
+
+			uploaded_file = ContentFile(request.body)
+			uploaded_file.name = name
+
+			newTrip.trip_data = uploaded_file
+			newTrip.save()
 
 			return HttpResponse('true')
 
@@ -176,11 +182,14 @@ def getTrip(request, id):
 	tripResponse = {}
 
 	if (tripObject):
+		file = tripObject.trip_data
+		trip_data_lines = str(file.read(), "utf-8")
+
 		tripResponse = {
 			"name": tripObject.name,
 			"bike_used": tripObject.bike_used,
 			"phone_placement": tripObject.phone_placement,
-			"trip_data": tripObject.trip_data
+			"trip_data": trip_data_lines
 		}
 
 	return JsonResponse(tripResponse)
