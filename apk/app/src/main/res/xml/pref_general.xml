@@ -13,14 +13,14 @@
     <ListPreference
         android:title="@string/pref_bike_title"
         android:key="@string/pref_bike_key"
-        android:defaultValue="@string/pref_bike_def"
+        android:defaultValue="road_bike"
         android:entries="@array/bike_array_entries"
         android:entryValues="@array/bike_array_values"/>
 
     <ListPreference
         android:title="@string/pref_placement_title"
         android:key="@string/pref_placement_key"
-        android:defaultValue="@string/pref_placement_def"
+        android:defaultValue="pocket"
         android:entries="@array/placement_array_entries"
         android:entryValues="@array/placement_array_values"/>
 

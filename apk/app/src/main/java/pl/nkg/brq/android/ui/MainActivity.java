@@ -230,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Sprawdzamy czy połączenie odpowiada temu wybranemu przez użytkownika
         if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI || connectionType.equals("internet")){
-            Log.d("APP", "START");
             new FileBacklogUpload(getApplicationContext()).execute(fileList);
 
             Toast.makeText(this, R.string.local_data_upload_toast, Toast.LENGTH_LONG).show();

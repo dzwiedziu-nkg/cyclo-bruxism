@@ -1,7 +1,9 @@
 package pl.nkg.brq.android.ui;
 
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 
 import pl.nkg.brq.android.R;
 

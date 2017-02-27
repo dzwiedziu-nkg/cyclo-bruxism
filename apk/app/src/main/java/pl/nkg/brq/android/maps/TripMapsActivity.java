@@ -82,6 +82,8 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
                     tripDataArray.getJSONObject(0).getDouble("longitude")
             );
 
+            Log.d("APP", tripDataArray.toString());
+
             mMap.addMarker(new MarkerOptions().position(startPosition).title("Start"));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
 

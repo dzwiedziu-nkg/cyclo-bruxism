@@ -57,18 +57,20 @@
 
     <string name="pref_bike_title">Bike type</string>
     <string name="pref_bike_key">bike_type</string>
-    <string name="pref_bike_def">Road bike</string>
 
     <string name="pref_placement_title">Phone placement</string>
     <string name="pref_placement_key">placement_type</string>
-    <string name="pref_placement_def">Pocket</string>
 
     <string name="pref_sharing_title">Sharing</string>
     <string name="pref_sharing_key">public_availability</string>
     <string name="pref_sharing_summary">Check if you want to share your data with others!</string>
+
     <string name="title_activity_trip_map">Map</string>
     <string name="title_activity_trip_maps">Map</string>
+
     <string name="file_saved_locally_toast">File saved locally...</string>
+    <string name="backlog_file_sent_toast">Backlog file sent!</string>
+
     <string name="action_selecet_trip">Select trip</string>
     <string name="action_selecet_trip_user_only">Select your trip</string>
     <string name="trip_array_key">tripArray</string>
@@ -76,5 +78,4 @@
     <string name="nothing_to_send_toast">Nothing to send!</string>
     <string name="file_list_key">fileList</string>
     <string name="local_data_upload_toast">Uploading local data...</string>
-    <string name="backlog_file_sent_toast">Backlog file sent!</string>
 </resources>
