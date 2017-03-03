@@ -13,6 +13,8 @@ class Trip(models.Model):
 	is_public = models.BooleanField()
 
 	name = models.CharField(max_length=60)
+	date = models.CharField(max_length=15)
+
 	bike_used = models.CharField(max_length=40)
 	phone_placement = models.CharField(max_length=40)
 

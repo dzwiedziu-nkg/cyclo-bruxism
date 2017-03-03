@@ -4,9 +4,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from itertools import chain
 from django.core.files.base import ContentFile
+from django.core.files import File
 
 import json
 import math
+import logging
 
 from .models import User
 from .models import Trip
@@ -37,50 +39,98 @@ def register(request, userName, password):
 # 'false_invalid_form' jeżeli załącznik nie jest poprawny
 # 'false_post' jeżeli nie połączono się z użyciem metody "POST"
 @csrf_exempt 
-def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic):
+def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic, tripDate):
 	if request.method == 'POST':
 
 		user = User.objects.filter(user_name=userName)
 
 		if (user and request.body):
-			boolIsPublic = False
-			if isPublic == 'true':
-				boolIsPublic = True
+			filteredTrip = Trip.objects.filter(name=name, date=tripDate)
 
-			trip_object = json.loads(str(request.body, "utf-8"))
-			trip_array = trip_object["trip_data"]
+			# Dodanie danych do już istniejącej podróży
+			if (filteredTrip):
+				tripFromDatabase = filteredTrip.get()
+				file = tripFromDatabase.trip_data
 
-			trip_data = []
-			trip_body = {}
+				trip_object_old = json.loads(str(file.read(), "utf-8").replace("'",'"'))
+				trip_array_old = trip_object_old["trip_data"]
 
-			for record in trip_array:
-				latitude = round(record["latitude"], 4)
-				longitude = round(record["longitude"], 4)
-				rating = ratingCalculation(record["soundNoise"], record["shake"])
+				trip_object_new = json.loads(str(request.body, "utf-8"))
+				trip_array_new = trip_object_new["trip_data"]
 
-				record = {
-					"latitude": latitude,
-					"longitude": longitude,
-					"rating": rating
-				}
+				tripObjectToSave = {}
 
-				trip_data.append(record)
-				saveRating(latitude, longitude, rating)
+				# Przetworzenie wyników i dodanie ich do odpowiednich obiektów
+				for record in trip_array_new:
+					latitude = round(record["latitude"], 4)
+					longitude = round(record["longitude"], 4)
+					rating = ratingCalculation(record["soundNoise"], record["shake"])
 
-			trip_body["trip_data"] = trip_data
+					record = {
+						"latitude": latitude,
+						"longitude": longitude,
+						"rating": rating
+					}
 
-			newTrip = Trip(
-				user_fkey = user.get(), 
-				name = name, 
-				bike_used = bikeType, 
-				phone_placement = phonePlacement, 
-				is_public = boolIsPublic)
+					saveRating(latitude, longitude, rating)
+					trip_array_old.append(record)
 
-			uploaded_file = ContentFile(request.body)
-			uploaded_file.name = name
+				tripObjectToSave["trip_data"] = trip_array_old
 
-			newTrip.trip_data = uploaded_file
-			newTrip.save()
+				# Utworzenie nowego pliku z informacjami o podróży, oraz usunięcie starego
+				appendedFile = ContentFile(str(tripObjectToSave))
+				appendedFile.name = name
+
+				tripFromDatabase.trip_data.delete()
+				tripFromDatabase.trip_data = appendedFile
+				tripFromDatabase.save()
+
+			# Dodanie do bazy nowej podróży
+			else:
+				boolIsPublic = False
+				if isPublic == 'true':
+					boolIsPublic = True
+
+				trip_object = json.loads(str(request.body, "utf-8"))
+				trip_array = trip_object["trip_data"]
+
+				tripObjectToSave = {}
+				tripArrayToSave = []
+
+				# Przetworzenie wyników i dodanie ich do odpowiednich obiektów
+				for record in trip_array:
+					latitude = round(record["latitude"], 4)
+					longitude = round(record["longitude"], 4)
+					rating = ratingCalculation(record["soundNoise"], record["shake"])
+
+					saveRating(latitude, longitude, rating)
+
+					record = {
+						"latitude": latitude,
+						"longitude": longitude,
+						"rating": rating
+					}
+
+					tripArrayToSave.append(record)
+
+				tripObjectToSave["trip_data"] = tripArrayToSave
+
+				# Utworzenie nowego obiektu "Trip"
+				newTrip = Trip(
+					user_fkey = user.get(), 
+					name = name,
+					date = tripDate,
+					bike_used = bikeType, 
+					phone_placement = phonePlacement, 
+					is_public = boolIsPublic)
+
+				# Utworzenie pliku w którym przechowywane są inormacje na temat podróży
+				uploaded_file = ContentFile(str(tripObjectToSave))
+				uploaded_file.name = name
+
+				# Zapisanie nowego wpisu do bazy danych
+				newTrip.trip_data = uploaded_file
+				newTrip.save()
 
 			return HttpResponse('true')
 

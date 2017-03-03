@@ -26,7 +26,7 @@ public class FileAccess {
     }
 
     // Zapisanie pliku z danymi lokalnie
-    public void saveJSONFile(JSONObject jsonObject, String fileName, String userName, String bikeType, String phonePlacement, String isPublic){
+    public void saveJSONFile(JSONObject jsonObject, String fileName, String userName, String bikeType, String phonePlacement, String isPublic, String tripDate){
         this.createDirectory();
 
         File file = new File(Environment.getExternalStorageDirectory()
@@ -34,11 +34,12 @@ public class FileAccess {
                 + "/" + fileName + ".json");
 
         try {
-            jsonObject.put("name", fileName);
+            jsonObject.put("fileName", fileName);
             jsonObject.put("userName", userName);
             jsonObject.put("bikeType", bikeType);
             jsonObject.put("phonePlacement", phonePlacement);
             jsonObject.put("isPublic", isPublic);
+            jsonObject.put("tripDate", tripDate);
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -210,6 +210,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Wyszukanie zapisanych lokalnie plików i ich wysłanie jeśli to możliwe
     protected void sendStoredFiles(){
+        if (ConstValues.DATA_SENDING_ACTIVE == false){
+            return;
+        }
+
         FileAccess fileAccess = new FileAccess();
         ArrayList<File> fileList = fileAccess.getAllSavedData();
 
@@ -288,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
         mAltitudeTextView.setText(getString(R.string.altitude_text) + (int) record.altitude + " m n.p.m.");
         mShakeTextView.setText( getString(R.string.acceleration_text) +  (int) (record.shake * 100) / 100.0 + " m/s²");
         mNoiseTextView.setText( getString(R.string.noise_text) + (int) record.soundNoise + " db");
-        mDistanceTextView.setText((double) record.distance / 100.0 + " m");
+        mDistanceTextView.setText( getString(R.string.distance_text) + (double) record.distance / 100.0 + " m");
 
         if (record.distance < 120 && record.distance != 0) {
             mWarningTextView.setVisibility(View.VISIBLE);
@@ -307,9 +311,7 @@ public class MainActivity extends AppCompatActivity {
     public void selectTripDialog(String mode){
         final Dialog tripSelectDialog = new Dialog(this);
         tripSelectDialog.setContentView(R.layout.select_trip_dialog);
-
         tripSelectDialog.setTitle(R.string.title_dialog_select);
-
         tripSelectDialog.show();
 
         String userName = sharedPreferences.getString(getString(R.string.pref_user_logged_key), "");
@@ -317,15 +319,21 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             String response =  new NetworkGetTripList().execute(userName, mode).get();
-            JSONObject jsonResponse = new JSONObject(response);
-            JSONArray responseArray = jsonResponse.getJSONArray("array");
+            if (response == null) {
+                Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_LONG).show();
+                tripSelectDialog.dismiss();
+                return;
+            } else {
+                JSONObject jsonResponse = new JSONObject(response);
+                JSONArray responseArray = jsonResponse.getJSONArray("array");
 
-            for (int i = 0; i < responseArray.length(); i++) {
-                JSONObject value = responseArray.getJSONObject(i);
-                tripObjects.add(new TripObject(
-                        value.getInt("id"),
-                        value.getString("name")
-                ));
+                for (int i = 0; i < responseArray.length(); i++) {
+                    JSONObject value = responseArray.getJSONObject(i);
+                    tripObjects.add(new TripObject(
+                            value.getInt("id"),
+                            value.getString("name")
+                    ));
+                }
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -350,16 +358,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(tripListView.getCheckedItemPosition() != -1 ){
-                    TripObject tripObject = (TripObject)tripListView.getAdapter().getItem(tripListView.getCheckedItemPosition());
-                    JSONArray tripDataArray = new JSONArray();
-
-
                     try {
-                        String tripResponseString = new NetworkGetTrip().execute(Integer.toString(tripObject.getId())).get();
-                        JSONObject tripResponseJson = new JSONObject(tripResponseString);
+                        TripObject tripObject = (TripObject)tripListView.getAdapter().getItem(tripListView.getCheckedItemPosition());
+                        if (tripObject == null) {
+                            Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_LONG).show();
+                        } else {
+                            JSONArray tripDataArray = new JSONArray();
 
-                        String tripDataString = tripResponseJson.getString("trip_data");
-                        tripDataArray = (new JSONObject(tripDataString)).getJSONArray("trip_data");
+                            String tripResponseString = new NetworkGetTrip().execute(Integer.toString(tripObject.getId())).get();
+                            JSONObject tripResponseJson = new JSONObject(tripResponseString);
+
+                            String tripDataString = tripResponseJson.getString("trip_data");
+                            tripDataArray = (new JSONObject(tripDataString)).getJSONArray("trip_data");
+
+                            Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
+                            mapIntent.putExtra(getString(R.string.trip_array_key), tripDataArray.toString());
+
+                            startActivity(mapIntent);
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (ExecutionException e) {
@@ -367,11 +383,6 @@ public class MainActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
-                    Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
-                    mapIntent.putExtra(getString(R.string.trip_array_key), tripDataArray.toString());
-
-                    startActivity(mapIntent);
                 }
 
                 tripSelectDialog.dismiss();

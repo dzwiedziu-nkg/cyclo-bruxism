@@ -88,6 +88,7 @@ public class SensorsService extends Service {
     private String bikeType;
     private String phonePlacement;
     private String isPublic;
+    private String tripDate;
 
     private SharedPreferences preferences;
     private Intent myIntent;
@@ -149,10 +150,11 @@ public class SensorsService extends Service {
                 phonePlacement = preferences.getString(getString(R.string.pref_placement_key), "");
                 isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
                 fileName = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
+                tripDate = dateFormat.format(new Date());
 
                 //zapasowa nazwa jeśli żadnej nie podano:
                 if( fileName.equals("")) {
-                    fileName = "brq_" + dateFormat.format(new Date());
+                    fileName = "brq_" + tripDate;
                 }
 
                 while (!isFinish()) {
@@ -244,6 +246,7 @@ public class SensorsService extends Service {
             e.printStackTrace();
         }
 
+        // Pobieranie informacji na temat dostępnego połączenia internetowego
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         String connectionType = preferences.getString(getString(R.string.pref_connection_key), "");
@@ -256,7 +259,7 @@ public class SensorsService extends Service {
             sendFile();
         //lokalne zapisanie danych
         } else {
-            fileAccess.saveJSONFile(jsonObjectMain , fileName, userName, bikeType, phonePlacement, isPublic);
+            fileAccess.saveJSONFile(jsonObjectMain , fileName, userName, bikeType, phonePlacement, isPublic, tripDate);
             makeToast(getString(R.string.file_saved_locally_toast));
         }
     }
@@ -268,8 +271,9 @@ public class SensorsService extends Service {
         String isPublic = Boolean.toString(preferences.getBoolean(getString(R.string.pref_sharing_key), true));
 
         try {
-            String response =  new NetworkSaveTrip().execute(this.jsonObjectMain, userName, fileName, bikeType, phonePlacement, isPublic).get();
+            String response =  new NetworkSaveTrip().execute(this.jsonObjectMain, userName, fileName, bikeType, phonePlacement, isPublic, tripDate).get();
 
+            // Sprawdzamy czy wysyłanie się powiodło
             if ( response.equals("true") ) {
                 makeToast(getString(R.string.upload_success_toast));
                 return;
@@ -281,8 +285,7 @@ public class SensorsService extends Service {
                 makeToast(getString(R.string.timeout_exception_toast));
             }
 
-            //zapisanie pliku na dysku w przypadku błędu przesyłania
-            fileAccess.saveJSONFile(jsonObjectMain , fileName, userName, bikeType, phonePlacement, isPublic);
+            // Pokazanie wiadomości o niepowodzeniu przesłania
             makeToast(getString(R.string.file_saved_locally_toast));
         } catch (Exception e){
             Log.e("MyApp", e.getMessage());
