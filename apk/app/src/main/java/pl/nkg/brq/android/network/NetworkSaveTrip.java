@@ -45,49 +45,8 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
         String phonePlacement = (String) urls[4];
         String isPublic = (String) urls[5];
         String tripDate = (String) urls[6];
-        String response = "false";
 
-        try {
-            JSONArray jsonArray = jsonObjectMain.getJSONArray("trip_data");
-            JSONArray jsonArrayToSent;
-            JSONObject jsonObjectToSent;
-            JSONArray jsonArrayRest;
-
-            while (jsonArray.length() > 0){
-                jsonArrayToSent = new JSONArray();
-                jsonArrayRest = new JSONArray();
-
-                if (jsonArray.length() < ConstValues.DATA_CHUNK_SIZE) {
-                    jsonArrayToSent = jsonArray;
-                } else {
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        if (i < ConstValues.DATA_CHUNK_SIZE){
-                            jsonArrayToSent.put(jsonArray.get(i));
-                        } else {
-                            jsonArrayRest.put(jsonArray.get(i));
-                        }
-                    }
-                }
-
-                jsonObjectToSent = new JSONObject().put("trip_data", jsonArrayToSent);
-                response = uploadTrip(jsonObjectToSent, userName, fileName, bikeType, phonePlacement, isPublic, tripDate);
-
-                //zapisanie pliku na dysku w przypadku błędu przesyłania
-                if (!response.equals("true")) {
-                    JSONObject jsonObjectToSave = new JSONObject().put("trip_data", jsonArray);
-
-                    FileAccess fileAccess = new FileAccess();
-                    fileAccess.saveJSONFile(jsonObjectToSave, fileName, userName, bikeType, phonePlacement, isPublic, tripDate);
-                    return response;
-                }
-
-                jsonArray = jsonArrayRest;
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
+        String response = uploadTrip(jsonObjectMain, userName, fileName, bikeType, phonePlacement, isPublic, tripDate);
         return response;
     }
 
@@ -99,6 +58,16 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
                                 String isPublic,
                                 String tripDate) {
 
+        Log.d("APP", "TEST");
+
+        FileAccess fileAccess = new FileAccess();
+        String response = "false";
+
+        JSONArray jsonArray = null;
+        JSONArray jsonArrayRest = null;
+        JSONArray jsonArrayToSent;
+        JSONObject jsonObjectToSent;
+
         try {
             URL url = new URL(ConstValues.BASE_URL + "/mydatabase/saveTrip/"
                     + userName + "/"
@@ -108,31 +77,84 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
                     + isPublic + "/"
                     + tripDate + "/");
 
-            HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+            jsonArray = jsonObject.getJSONArray("trip_data");
 
-            urlConnection.setDoOutput(true);
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
-            urlConnection.setReadTimeout(ConstValues.CONNECTION_TIMEOUT);
-            urlConnection.connect();
+            // Wysyłanie obiektów JSON w odpowiednich kawałkach
+            while (jsonArray.length() > 0) {
+                jsonArrayToSent = new JSONArray();
+                jsonArrayRest = new JSONArray();
 
-            DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
-            wr.writeBytes(jsonObject.toString());
-            wr.flush();
-            wr.close();
+                // Podział danych na elementy odpowiedniej wielkości
+                if (jsonArray.length() < ConstValues.DATA_CHUNK_SIZE) {
+                    jsonArrayToSent = jsonArray;
+                } else {
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        if (i < ConstValues.DATA_CHUNK_SIZE) {
+                            jsonArrayToSent.put(jsonArray.get(i));
+                        } else {
+                            jsonArrayRest.put(jsonArray.get(i));
+                        }
+                    }
+                }
 
-            InputStream in = urlConnection.getInputStream();
-            String encoding = urlConnection.getContentEncoding();
-            encoding = encoding == null ? "UTF-8" : encoding;
-            String myResponse = IOUtils.toString(in, encoding);
+                jsonObjectToSent = new JSONObject().put("trip_data", jsonArrayToSent);
 
-            urlConnection.disconnect();
-            return myResponse;
+                // Utworzenie połączenia http
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
+                urlConnection.setReadTimeout(ConstValues.CONNECTION_TIMEOUT);
+                urlConnection.connect();
 
+                DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
+                wr.writeBytes(jsonObjectToSent.toString());
+                wr.flush();
+                wr.close();
+
+                InputStream in = urlConnection.getInputStream();
+                String encoding = urlConnection.getContentEncoding();
+                encoding = encoding == null ? "UTF-8" : encoding;
+                response = IOUtils.toString(in, encoding);
+
+                urlConnection.disconnect();
+
+                Log.d("APP", "JSONArray: " + Integer.toString(jsonArray.length()));
+                Log.d("APP", "JSONArrayRest: " + Integer.toString(jsonArrayRest.length()));
+
+                //zapisanie pliku na dysku w przypadku błędu przesyłania
+                if (!response.equals("true")) {
+                    JSONObject jsonObjectToSave = new JSONObject().put("trip_data", jsonArray);
+                    fileAccess.saveJSONFile(jsonObjectToSave, fileName, userName, bikeType, phonePlacement, isPublic, tripDate);
+
+                    return response;
+                }
+
+                jsonArray = jsonArrayRest;
+                Log.d("APP", "JSONArrayKoniec: " + Integer.toString(jsonArray.length()));
+            }
+
+            return response;
         } catch (java.net.SocketTimeoutException e) {
+            JSONObject jsonObjectToSave = null;
+            try {
+                jsonObjectToSave = new JSONObject().put("trip_data", jsonArrayRest);
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            }
+            fileAccess.saveJSONFile(jsonObjectToSave, fileName, userName, bikeType, phonePlacement, isPublic, tripDate);
+
             return "false_timeout";
         } catch (Exception e) {
+            JSONObject jsonObjectToSave = null;
+            try {
+                jsonObjectToSave = new JSONObject().put("trip_data", jsonArray);
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            }
+            fileAccess.saveJSONFile(jsonObjectToSave, fileName, userName, bikeType, phonePlacement, isPublic, tripDate);
+
             Log.e("MyApp", e.getMessage());
             return "";
         }

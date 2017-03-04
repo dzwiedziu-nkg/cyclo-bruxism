@@ -47,8 +47,8 @@ public class FileBacklogUpload extends AsyncTask<ArrayList<File>, Void, Void> {
                 jsonObject =  new JSONObject(jsonText);
 
                 if(jsonObject != null){
+                    file.delete();
                     if (sendFile(jsonObject)){
-                        file.delete();
                         fileSent = true;
                     }
                 }
