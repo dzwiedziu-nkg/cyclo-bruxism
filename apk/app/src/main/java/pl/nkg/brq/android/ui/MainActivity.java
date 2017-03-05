@@ -56,6 +56,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import butterknife.Bind;
@@ -242,8 +243,22 @@ public class MainActivity extends AppCompatActivity {
 
     //Opis jakiego rowera używamy itp...
     protected void updateDescription() {
-        bikeTextView.setText(getString(R.string.bike_type_info) + sharedPreferences.getString(getString(R.string.pref_bike_key), ""));
-        placementTextView.setText(getString(R.string.placement_info) + sharedPreferences.getString(getString(R.string.pref_placement_key), ""));
+        String bikePreference = sharedPreferences.getString(getString(R.string.pref_bike_key), "");
+        String[] bikeValues = getResources().getStringArray(R.array.bike_array_values);
+        String[] bikeEntries = getResources().getStringArray(R.array.bike_array_entries);
+
+        int bikePosition = Arrays.asList(bikeValues).indexOf(bikePreference);
+        String bikeText = bikeEntries[bikePosition];
+
+        String placementPreference = sharedPreferences.getString(getString(R.string.pref_placement_key), "");
+        String[] placementValues = getResources().getStringArray(R.array.placement_array_values);
+        String[] placementEntries = getResources().getStringArray(R.array.placement_array_entries);
+
+        int placementPosition = Arrays.asList(placementValues).indexOf(placementPreference);
+        String placementText = placementEntries[placementPosition];
+
+        bikeTextView.setText(getString(R.string.bike_type_info) + bikeText);
+        placementTextView.setText(getString(R.string.placement_info) + placementText);
     }
 
     @OnClick(R.id.button_on)

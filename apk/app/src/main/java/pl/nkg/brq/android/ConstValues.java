@@ -15,7 +15,7 @@ public class ConstValues {
     public static final String MODE_ALL_USERS = "allUsers";
 
     public static final boolean DATA_SENDING_ACTIVE = true;
-    public static final boolean SAVE_EMPTY_DATA = false;
+    public static final boolean SAVE_EMPTY_DATA = true;
 
     public static final String API_KEY = "AIzaSyBZGDRVjIgsqDaxBhkOCXkNCoLWNYEPw78";
     public static final String DIRECTORY_NAME = "RoadTester";

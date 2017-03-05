@@ -149,7 +149,7 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
         } catch (Exception e) {
             JSONObject jsonObjectToSave = null;
             try {
-                jsonObjectToSave = new JSONObject().put("trip_data", jsonArray);
+                jsonObjectToSave = new JSONObject().put("trip_data", jsonArrayRest);
             } catch (JSONException e1) {
                 e1.printStackTrace();
             }
