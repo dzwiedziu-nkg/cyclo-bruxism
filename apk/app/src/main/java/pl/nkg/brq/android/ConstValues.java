@@ -7,7 +7,7 @@ import android.graphics.Color;
  */
 
 public class ConstValues {
-    public static final String BASE_URL = "http://192.168.222.186:8000";
+    public static final String BASE_URL = "http://192.168.56.1:8000";
     public static final int CONNECTION_TIMEOUT = 10000;
     public static final int DATA_CHUNK_SIZE = 20;
 
