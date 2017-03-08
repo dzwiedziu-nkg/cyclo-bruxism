@@ -62,8 +62,8 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic, tripDa
 
 				# Przetworzenie wyników i dodanie ich do odpowiednich obiektów
 				for record in trip_array_new:
-					latitude = round(record["latitude"], 4)
-					longitude = round(record["longitude"], 4)
+					latitude = record["latitude"]
+					longitude = record["longitude"]
 					rating = ratingCalculation(record["soundNoise"], record["shake"])
 
 					record = {
@@ -99,8 +99,8 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic, tripDa
 
 				# Przetworzenie wyników i dodanie ich do odpowiednich obiektów
 				for record in trip_array:
-					latitude = round(record["latitude"], 4)
-					longitude = round(record["longitude"], 4)
+					latitude = record["latitude"]
+					longitude = record["longitude"]
 					rating = ratingCalculation(record["soundNoise"], record["shake"])
 
 					saveRating(latitude, longitude, rating)
@@ -171,12 +171,12 @@ def ratingCalculation(soundNoise, shake):
 
 def saveRating(latitude, longitude, rating):
 	try:
-		ratingObject = Rating.objects.get(latitude=latitude, longitude=longitude)
+		ratingObject = Rating.objects.get(latitude=round(latitude, 4), longitude=round(longitude, 4))
 		ratingObject.rating += rating
 		ratingObject.count += 1
 		ratingObject.save()
 	except Rating.DoesNotExist:
-		Rating.objects.create(latitude=latitude, longitude=longitude, rating=rating, count = 1)
+		Rating.objects.create(latitude=round(latitude, 4), longitude=round(longitude, 4), rating=rating, count = 1)
 
 	return
 

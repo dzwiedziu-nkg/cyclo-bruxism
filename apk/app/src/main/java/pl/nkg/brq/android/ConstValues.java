@@ -7,15 +7,15 @@ import android.graphics.Color;
  */
 
 public class ConstValues {
-    public static final String BASE_URL = "http://192.168.1.103:8000";
+    public static final String BASE_URL = "http://192.168.222.186:8000";
     public static final int CONNECTION_TIMEOUT = 10000;
-    public static final int DATA_CHUNK_SIZE = 10;
+    public static final int DATA_CHUNK_SIZE = 20;
 
     public static final String MODE_USER_ONLY = "userOnly";
     public static final String MODE_ALL_USERS = "allUsers";
 
     public static final boolean DATA_SENDING_ACTIVE = true;
-    public static final boolean SAVE_EMPTY_DATA = true;
+    public static final boolean SAVE_EMPTY_DATA = false;
 
     public static final String API_KEY = "AIzaSyBZGDRVjIgsqDaxBhkOCXkNCoLWNYEPw78";
     public static final String DIRECTORY_NAME = "RoadTester";
