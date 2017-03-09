@@ -26,9 +26,12 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
     private Intent intent;
 
     private GoogleMap mMap;
-    private JSONArray tripDataArray;
 
-    private static float cameraZoom = 18.0f;
+    private JSONArray tripDataArray;
+    private String tripBikeUsed;
+    private String tripPhonePlacement;
+
+    private static float cameraZoom = 17.0f;
     private static float polyWidth = 4.0f;
 
     private int[] colorGradeList = new int[11];
@@ -41,6 +44,8 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
 
         intent = getIntent();
         String tripDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
+        tripBikeUsed = (String) intent.getExtras().get(getString(R.string.trip_bike_key));
+        tripPhonePlacement = (String) intent.getExtras().get(getString(R.string.trip_phone_key));
 
         try {
             tripDataArray = new JSONArray(tripDataString);
@@ -75,15 +80,28 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
 
     private void drawTrip(){
         LatLng startPosition;
+        LatLng endPosition;
 
         try {
             startPosition = new LatLng(
-                    tripDataArray.getJSONObject(0).getDouble("latitude"),
-                    tripDataArray.getJSONObject(0).getDouble("longitude")
+                tripDataArray.getJSONObject(0).getDouble("latitude"),
+                tripDataArray.getJSONObject(0).getDouble("longitude")
             );
 
-            mMap.addMarker(new MarkerOptions().position(startPosition).title("Start"));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
+            mMap.addMarker(new MarkerOptions()
+                .position(startPosition)
+                .title("Start")
+                .snippet("Bike: " + tripBikeUsed + ", place: " + tripPhonePlacement)).showInfoWindow();
+
+            endPosition = new LatLng(
+                    tripDataArray.getJSONObject(tripDataArray.length() - 1).getDouble("latitude"),
+                    tripDataArray.getJSONObject(tripDataArray.length() - 1).getDouble("longitude")
+            );
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(endPosition)
+                    .title("End"));
 
             JSONObject currentRecord;
             JSONObject nextRecord = tripDataArray.getJSONObject(1);
@@ -93,18 +111,18 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
                 nextRecord = tripDataArray.getJSONObject(i);
 
                 PolylineOptions polylineOptions = new PolylineOptions().
-                        geodesic(true).
-                        width(polyWidth).
-                        color(colorGradeList[((Double) currentRecord.getDouble("rating")).intValue()]);
+                    geodesic(true)
+                    .width(polyWidth)
+                    .color(colorGradeList[((Double) currentRecord.getDouble("rating")).intValue()]);
 
                 polylineOptions.add(new LatLng(
-                        currentRecord.getDouble("latitude"),
-                        currentRecord.getDouble("longitude")
+                    currentRecord.getDouble("latitude"),
+                    currentRecord.getDouble("longitude")
                 ));
 
                 polylineOptions.add(new LatLng(
-                        nextRecord.getDouble("latitude"),
-                        nextRecord.getDouble("longitude")
+                    nextRecord.getDouble("latitude"),
+                    nextRecord.getDouble("longitude")
                 ));
 
                 mMap.addPolyline(polylineOptions);

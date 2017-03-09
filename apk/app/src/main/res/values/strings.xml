@@ -75,6 +75,8 @@
     <string name="action_selecet_trip">Select trip</string>
     <string name="action_selecet_trip_user_only">Select your trip</string>
     <string name="trip_array_key">tripArray</string>
+    <string name="trip_bike_key">tripPhone</string>
+    <string name="trip_phone_key">tripBike</string>
     <string name="action_selecet_terrain">Terrain map</string>
     <string name="nothing_to_send_toast">Nothing to send!</string>
     <string name="file_list_key">fileList</string>

@@ -384,10 +384,16 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject tripResponseJson = new JSONObject(tripResponseString);
 
                             String tripDataString = tripResponseJson.getString("trip_data");
-                            tripDataArray = (new JSONObject(tripDataString)).getJSONArray("trip_data");
+                            JSONObject tripDataObject = new JSONObject(tripDataString);
+
+                            tripDataArray = tripDataObject.getJSONArray("trip_data");
+                            String tripBikeUsed = tripResponseJson.getString("bike_used");
+                            String tripPhonePlacement = tripResponseJson.getString("phone_placement");
 
                             Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
                             mapIntent.putExtra(getString(R.string.trip_array_key), tripDataArray.toString());
+                            mapIntent.putExtra(getString(R.string.trip_bike_key), tripBikeUsed);
+                            mapIntent.putExtra(getString(R.string.trip_phone_key), tripPhonePlacement);
 
                             startActivity(mapIntent);
                         }
