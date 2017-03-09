@@ -9,6 +9,7 @@ from django.core.files import File
 import json
 import math
 import logging
+import os
 
 from .models import User
 from .models import Trip
@@ -52,38 +53,34 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic, tripDa
 				tripFromDatabase = filteredTrip.get()
 				file = tripFromDatabase.trip_data
 
-				trip_object_old = json.loads(str(file.read(), "utf-8").replace("'",'"'))
-				trip_array_old = trip_object_old["trip_data"]
-
 				trip_object_new = json.loads(str(request.body, "utf-8"))
 				trip_array_new = trip_object_new["trip_data"]
 
-				tripObjectToSave = {}
+				# Otwarcie pliku do przetworzenia
+				with open(file.path, 'rb+') as filehandle:
+					filehandle.seek(-2, os.SEEK_END)
+					filehandle.truncate()
 
-				# Przetworzenie wyników i dodanie ich do odpowiednich obiektów
-				for record in trip_array_new:
-					latitude = record["latitude"]
-					longitude = record["longitude"]
-					rating = ratingCalculation(record["soundNoise"], record["shake"])
+					# Przetworzenie wyników i dodanie ich do odpowiednich obiektów
+					for record in trip_array_new:
+						latitude = record["latitude"]
+						longitude = record["longitude"]
+						rating = ratingCalculation(record["soundNoise"], record["shake"])
 
-					record = {
-						"latitude": latitude,
-						"longitude": longitude,
-						"rating": rating
-					}
+						record = {
+							"latitude": latitude,
+							"longitude": longitude,
+							"rating": rating
+						}
 
-					saveRating(latitude, longitude, rating)
-					trip_array_old.append(record)
+						saveRating(latitude, longitude, rating)
 
-				tripObjectToSave["trip_data"] = trip_array_old
+						# Dopisanie wyniku na koniec pliku
+						filehandle.write(bytes(', ', 'utf-8'))
+						filehandle.write(bytes(str(record), 'utf-8'))
 
-				# Utworzenie nowego pliku z informacjami o podróży, oraz usunięcie starego
-				appendedFile = ContentFile(str(tripObjectToSave))
-				appendedFile.name = name
-
-				tripFromDatabase.trip_data.delete()
-				tripFromDatabase.trip_data = appendedFile
-				tripFromDatabase.save()
+					# Zakończenie pliku
+					filehandle.write(bytes(']}', 'utf-8'))
 
 			# Dodanie do bazy nowej podróży
 			else:
