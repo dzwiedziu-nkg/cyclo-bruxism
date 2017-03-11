@@ -5,15 +5,15 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,14 +22,14 @@ import org.json.JSONObject;
 import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 
-public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnCameraIdleListener {
 
     private Intent intent;
 
     private GoogleMap mMap;
     private JSONArray terrainDataArray;
 
-    private static float cameraZoom = 18.0f;
+    private static float cameraZoom = 17.0f;
     private static float polyWidth = 1.0f;
     private static float mapOffset = 0.00005f;
 
@@ -72,12 +72,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        drawTerrain();
-    }
-
-    private void drawTerrain(){
         LatLng startPosition;
-
         try {
             startPosition = new LatLng(
                     terrainDataArray.getJSONObject(0).getDouble("latitude"),
@@ -85,6 +80,40 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
             );
 
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
+            mMap.setOnCameraIdleListener(this);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onCameraIdle() {
+        drawTerrain();
+    }
+
+    private void drawTerrain(){
+        LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+
+        double north = bounds.northeast.latitude;
+        double south = bounds.southwest.latitude;
+        double west = bounds.northeast.longitude;
+        double east = bounds.southwest.longitude;
+
+        Log.d("myAPP", "N: " + Double.toString(north) + " " +
+                "S: " + Double.toString(south) + " " +
+                "W: " + Double.toString(west) + " " +
+                "E: " + Double.toString(east) + " ");
+
+        String terrainDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
+
+        try {
+            terrainDataArray = new JSONArray(terrainDataString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            mMap.clear();
 
             for (int i = 0; i < terrainDataArray.length(); i++) {
                 JSONObject record = terrainDataArray.getJSONObject(i);

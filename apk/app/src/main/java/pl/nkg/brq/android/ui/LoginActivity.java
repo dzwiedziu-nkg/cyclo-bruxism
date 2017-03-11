@@ -154,17 +154,14 @@ public class LoginActivity extends AppCompatActivity {
                 Toast registerToast;
 
                 if ( newUserPassword.equals(newUserPasswordRepeat) ) {
-                    registerToast = Toast.makeText(getApplicationContext(),
-                            getString(R.string.register_success),
-                            Toast.LENGTH_SHORT);
                     sendRegisterInfo(newUserName, newUserPassword);
                 } else {
                     registerToast = Toast.makeText(getApplicationContext(),
                             getString(R.string.register_repeat_failure),
                             Toast.LENGTH_SHORT);
+                    registerToast.show();
                 }
 
-                registerToast.show();
                 myDialog.dismiss();
             }
         });
