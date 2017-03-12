@@ -30,6 +30,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     private JSONArray terrainDataArray;
 
     private static float cameraZoom = 17.0f;
+    private static float cameraMaxZoom = 15.0f;
     private static float polyWidth = 1.0f;
     private static float mapOffset = 0.00005f;
 
@@ -98,11 +99,18 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         double south = bounds.southwest.latitude;
         double west = bounds.northeast.longitude;
         double east = bounds.southwest.longitude;
+        double zoom = mMap.getCameraPosition().zoom;
 
         Log.d("myAPP", "N: " + Double.toString(north) + " " +
                 "S: " + Double.toString(south) + " " +
                 "W: " + Double.toString(west) + " " +
-                "E: " + Double.toString(east) + " ");
+                "E: " + Double.toString(east) + " " +
+                "Zoom: " + Double.toString(zoom) + " ");
+
+        if ( zoom < cameraMaxZoom ) {
+            mMap.clear();
+            return;
+        }
 
         String terrainDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
 
