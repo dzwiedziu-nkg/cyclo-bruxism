@@ -20,7 +20,18 @@ public class NetworkGetRating extends AsyncTask<String, Void, String> {
 
     protected String doInBackground(String... urls) {
         try {
-            URL url = new URL(ConstValues.BASE_URL + "/mydatabase/getRating/");
+            String north = urls[0];
+            String south = urls[1];
+            String east = urls[2];
+            String west = urls[3];
+
+            URL url = new URL(ConstValues.BASE_URL +
+                    "/mydatabase/getRating/" +
+                    north + "/" +
+                    south + "/" +
+                    east + "/" +
+                    west + "/"
+            );
 
             URLConnection urlConnection =  url.openConnection();
             urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);

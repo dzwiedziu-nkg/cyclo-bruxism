@@ -241,9 +241,9 @@ def getTrip(request, id):
 
 	return JsonResponse(tripResponse)
 
-# Zwraca rating
-def getRating(request):
-	ratingObjects = Rating.objects.filter()
+# Zwraca rating dla odpowiedniego obszaru geograficznego
+def getRating(request, north, south, east, west):
+	ratingObjects = Rating.objects.filter(latitude__lte=north, latitude__gte=south, longitude__gte=east, longitude__lte=west)
 
 	ratingResponse = {}
 	ratingRecords = []

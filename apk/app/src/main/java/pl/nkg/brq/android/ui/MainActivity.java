@@ -412,28 +412,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startTerrainMap(){
-        JSONArray terrainDataArray = new JSONArray();
-
-        try {
-            String tripResponseString = new NetworkGetRating().execute().get();
-            if (tripResponseString == null) {
-                Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            JSONObject tripResponseJson = new JSONObject(tripResponseString);
-            terrainDataArray = tripResponseJson.getJSONArray("array");
-
-            Intent mapIntent = new Intent(getApplicationContext(), TerrainMapsActivity.class);
-            mapIntent.putExtra(getString(R.string.trip_array_key), terrainDataArray.toString());
-
-            startActivity(mapIntent);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        Intent mapIntent = new Intent(getApplicationContext(), TerrainMapsActivity.class);
+        startActivity(mapIntent);
     }
 }

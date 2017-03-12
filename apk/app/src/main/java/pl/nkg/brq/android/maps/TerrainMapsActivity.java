@@ -19,8 +19,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.ExecutionException;
+
 import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
+import pl.nkg.brq.android.network.NetworkGetRating;
 
 public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnCameraIdleListener {
 
@@ -29,8 +32,11 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     private GoogleMap mMap;
     private JSONArray terrainDataArray;
 
+    // Domyślne przybliżenie mapy
     private static float cameraZoom = 17.0f;
-    private static float cameraMaxZoom = 15.0f;
+    // Przybliżenie powyżeje którego mapa przestanie ładować dane ( mniejsza wartość to większe oddalenie mapy! )
+    private static float cameraMaxZoom = 14.0f;
+
     private static float polyWidth = 1.0f;
     private static float mapOffset = 0.00005f;
 
@@ -43,13 +49,13 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         this.bindColors();
 
         intent = getIntent();
-        String terrainDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
+      //  String terrainDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
 
-        try {
-            terrainDataArray = new JSONArray(terrainDataString);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+     //   try {
+       //     terrainDataArray = new JSONArray(terrainDataString);
+      //  } catch (JSONException e) {
+      //      e.printStackTrace();
+      //  }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -73,18 +79,10 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        LatLng startPosition;
-        try {
-            startPosition = new LatLng(
-                    terrainDataArray.getJSONObject(0).getDouble("latitude"),
-                    terrainDataArray.getJSONObject(0).getDouble("longitude")
-            );
+        LatLng startPosition = new LatLng(50.0847, 19.9596);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
-            mMap.setOnCameraIdleListener(this);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        mMap.setOnCameraIdleListener(this);
     }
 
     @Override
@@ -101,23 +99,14 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         double east = bounds.southwest.longitude;
         double zoom = mMap.getCameraPosition().zoom;
 
-        Log.d("myAPP", "N: " + Double.toString(north) + " " +
-                "S: " + Double.toString(south) + " " +
-                "W: " + Double.toString(west) + " " +
-                "E: " + Double.toString(east) + " " +
-                "Zoom: " + Double.toString(zoom) + " ");
-
-        if ( zoom < cameraMaxZoom ) {
+        if (zoom < cameraMaxZoom) {
             mMap.clear();
             return;
         }
 
-        String terrainDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
-
-        try {
-            terrainDataArray = new JSONArray(terrainDataString);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (!getData(north, south, east, west)){
+            Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
+            return;
         }
 
         try {
@@ -143,5 +132,31 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean getData(double north, double south, double east, double west){
+        try {
+            String terrainDataString = new NetworkGetRating().execute(
+                    Double.toString(north),
+                    Double.toString(south),
+                    Double.toString(east),
+                    Double.toString(west)
+            ).get();
+
+            if (terrainDataString == null) {
+                return false;
+            }
+
+            JSONObject tripResponseJson = new JSONObject(terrainDataString);
+            terrainDataArray = tripResponseJson.getJSONArray("array");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 }
