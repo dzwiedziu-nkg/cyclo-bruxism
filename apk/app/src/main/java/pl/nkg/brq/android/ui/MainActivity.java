@@ -373,36 +373,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(tripListView.getCheckedItemPosition() != -1 ){
-                    try {
-                        TripObject tripObject = (TripObject)tripListView.getAdapter().getItem(tripListView.getCheckedItemPosition());
-                        if (tripObject == null) {
-                            Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_LONG).show();
-                        } else {
-                            JSONArray tripDataArray = new JSONArray();
+                    TripObject tripObject = (TripObject)tripListView.getAdapter().getItem(tripListView.getCheckedItemPosition());
+                    if (tripObject == null) {
+                        Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_LONG).show();
+                    } else {
+                        Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
+                        mapIntent.putExtra("tripId", Integer.toString(tripObject.getId()));
 
-                            String tripResponseString = new NetworkGetTrip().execute(Integer.toString(tripObject.getId())).get();
-                            JSONObject tripResponseJson = new JSONObject(tripResponseString);
-
-                            String tripDataString = tripResponseJson.getString("trip_data");
-                            JSONObject tripDataObject = new JSONObject(tripDataString);
-
-                            tripDataArray = tripDataObject.getJSONArray("trip_data");
-                            String tripBikeUsed = tripResponseJson.getString("bike_used");
-                            String tripPhonePlacement = tripResponseJson.getString("phone_placement");
-
-                            Intent mapIntent = new Intent(getApplicationContext(), TripMapsActivity.class);
-                            mapIntent.putExtra(getString(R.string.trip_array_key), tripDataArray.toString());
-                            mapIntent.putExtra(getString(R.string.trip_bike_key), tripBikeUsed);
-                            mapIntent.putExtra(getString(R.string.trip_phone_key), tripPhonePlacement);
-
-                            startActivity(mapIntent);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        startActivity(mapIntent);
                     }
                 }
 

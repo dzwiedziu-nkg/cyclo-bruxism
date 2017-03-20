@@ -9,7 +9,7 @@ import android.graphics.Color;
 public class ConstValues {
     public static final String BASE_URL = "https://bike-app-server.herokuapp.com";
     public static final int CONNECTION_TIMEOUT = 10000;
-    public static final int DATA_CHUNK_SIZE = 10;
+    public static final int DATA_CHUNK_SIZE = 50;
 
     public static final String MODE_USER_ONLY = "userOnly";
     public static final String MODE_ALL_USERS = "allUsers";

@@ -8,6 +8,7 @@ import android.util.Log;
 
 import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
+import pl.nkg.brq.android.network.NetworkGetTrip;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,6 +22,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.ExecutionException;
+
 public class TripMapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private Intent intent;
@@ -31,6 +34,7 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
     private String tripBikeUsed;
     private String tripPhonePlacement;
 
+    // Domyślne przybliżenie mapy
     private static float cameraZoom = 17.0f;
     private static float polyWidth = 4.0f;
 
@@ -43,15 +47,6 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
         this.bindColors();
 
         intent = getIntent();
-        String tripDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
-        tripBikeUsed = (String) intent.getExtras().get(getString(R.string.trip_bike_key));
-        tripPhonePlacement = (String) intent.getExtras().get(getString(R.string.trip_phone_key));
-
-        try {
-            tripDataArray = new JSONArray(tripDataString);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -71,13 +66,35 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
         colorGradeList[10] = ConstValues.colorGradeTen;
     }
 
+    // Przy załadowaniu mapy pobieramy dane do wyświetlenia i rysujemy je na mapie
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        try {
+            String tripId = intent.getExtras().getString("tripId");
+
+            String tripResponseString = new NetworkGetTrip().execute(tripId).get();
+            JSONObject tripResponseJson = new JSONObject(tripResponseString);
+
+            String tripDataString = tripResponseJson.getString("trip_data");
+            JSONObject tripDataObject = new JSONObject(tripDataString);
+
+            tripDataArray = tripDataObject.getJSONArray("trip_data");
+            tripBikeUsed = tripResponseJson.getString("bike_used");
+            tripPhonePlacement = tripResponseJson.getString("phone_placement");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         drawTrip();
     }
 
+    // Rysujemy polyline reprezentujący odpowiednimi kolorami przebytą drogę
     private void drawTrip(){
         LatLng startPosition;
         LatLng endPosition;

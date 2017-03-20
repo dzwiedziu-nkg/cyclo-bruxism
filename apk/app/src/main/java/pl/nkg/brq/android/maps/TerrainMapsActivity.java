@@ -49,13 +49,6 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         this.bindColors();
 
         intent = getIntent();
-      //  String terrainDataString = (String) intent.getExtras().get(getString(R.string.trip_array_key));
-
-     //   try {
-       //     terrainDataArray = new JSONArray(terrainDataString);
-      //  } catch (JSONException e) {
-      //      e.printStackTrace();
-      //  }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -75,6 +68,9 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         colorGradeList[10] = ConstValues.colorTransparentGradeTen;
     }
 
+    // Przy załadowaniu mapy ustawiamy jej początkową lokacje
+    // CameraIdleListener doświerza dane na mapie za każdym razem kiedy zakończone jest jej przesuwanie
+    // ( a także przy jej pierwszym włączeniu )
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -90,6 +86,8 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         drawTerrain();
     }
 
+    // Metoda która odczytuje aktualne wymiary mapy ( szerokość i długość geograficzną jej krańców )
+    // i wysyła odpowiednie zapytanie o dane na serwer.
     private void drawTerrain(){
         LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
 

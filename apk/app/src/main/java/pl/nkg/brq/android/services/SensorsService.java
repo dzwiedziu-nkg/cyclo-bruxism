@@ -66,7 +66,7 @@ public class SensorsService extends Service {
     // TODO: konfigurowalne
     private static final String BLE_ADDRESS = "98:4F:EE:0F:90:DC";
     private static final String BLUETOOTH_ADDRESS = "98:D3:33:80:73:28";
-    private static final int saveDuration = 200;
+    private static final int saveDuration = 500;
 
     private final IBinder mBinder = new LocalBinder();
 
