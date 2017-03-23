@@ -36,6 +36,9 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     private static float cameraZoom = 17.0f;
     // Przybliżenie powyżeje którego mapa przestanie ładować dane ( mniejsza wartość to większe oddalenie mapy! )
     private static float cameraMaxZoom = 14.0f;
+    // Wyrażony procentowo obszar ekranu poza któym ładują się dane.
+    // Przykładowo przy 0.1f: 10% szerokości wyświetlonej mapy po obu stronach jest załadowane.
+    private static float cameraMargin = 0.2f;
 
     private static float polyWidth = 1.0f;
     private static float mapOffset = 0.00005f;
@@ -101,6 +104,14 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
             mMap.clear();
             return;
         }
+
+        double nsOffset = (north - south) * cameraMargin;
+        double weOffset = (west - east) * cameraMargin;
+
+        north += nsOffset;
+        south -= nsOffset;
+        west += weOffset;
+        east -= weOffset;
 
         if (!getData(north, south, east, west)){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();

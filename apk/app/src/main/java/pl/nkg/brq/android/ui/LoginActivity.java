@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -89,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         } catch (Exception e){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
+            Log.d("myApp", e.toString());
         }
     }
 
@@ -194,6 +196,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         } catch (Exception e){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
+            Log.d("myApp", e.toString());
         }
     }
 
