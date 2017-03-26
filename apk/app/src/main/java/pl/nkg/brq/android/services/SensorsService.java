@@ -66,7 +66,9 @@ public class SensorsService extends Service {
     // TODO: konfigurowalne
     private static final String BLE_ADDRESS = "98:4F:EE:0F:90:DC";
     private static final String BLUETOOTH_ADDRESS = "98:D3:33:80:73:28";
+
     private static final int saveDuration = 500;
+    private static final double GPS_ACCURACY = 100.0f;
 
     private final IBinder mBinder = new LocalBinder();
 
@@ -201,7 +203,13 @@ public class SensorsService extends Service {
 
         // zabezpieczenie przed zapisywaniem danych zapisanych zanim złapał GPS
         // opcja SAVE_EMPTY_DATA pozwala na zapisa takich danych do celów testowych
-        if (!ConstValues.SAVE_EMPTY_DATA && record.latitude == 0.0 && record.longitude == 0.0 ){
+        if (!ConstValues.SAVE_EMPTY_DATA && record.latitude == 0.0 && record.longitude == 0.0){
+            return;
+        }
+
+        // Zabezpieczenie przed zapisywaniem niedokładnych danych z GPS.
+        // Jeżeli błąd jest zbyt duży ( stała GPS_ACCURACY ), dane są odrzucone.
+        if (record.accuracy > GPS_ACCURACY){
             return;
         }
 

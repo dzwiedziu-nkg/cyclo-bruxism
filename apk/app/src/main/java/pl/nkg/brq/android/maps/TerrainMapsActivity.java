@@ -1,8 +1,15 @@
 package pl.nkg.brq.android.maps;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -58,7 +65,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         mapFragment.getMapAsync(this);
     }
 
-    private void bindColors(){
+    private void bindColors() {
         colorGradeList[1] = ConstValues.colorTransparentGradeOne;
         colorGradeList[2] = ConstValues.colorTransparentGradeTwo;
         colorGradeList[3] = ConstValues.colorTransparentGradeThree;
@@ -78,7 +85,26 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        LatLng startPosition = new LatLng(50.0847, 19.9596);
+        LatLng startPosition = null;
+
+        // Pobieramy obecne położenie użytkownika i jeśli się uda to przesuwamy tam mapę
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Domyślne położenie mapy (Kraków)
+            startPosition =  new LatLng(50.0847, 19.9596);
+        } else {
+            Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
+            if (location != null){
+                // Przesunięcie do obecnego miejsca użytkownika
+                startPosition =  new LatLng(location.getLatitude(), location.getLongitude());
+            } else {
+                // Domyślne położenie mapy przy braku lokalizacji użytkownika (Kraków)
+                startPosition =  new LatLng(50.0847, 19.9596);
+            }
+        }
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
 
         mMap.setOnCameraIdleListener(this);

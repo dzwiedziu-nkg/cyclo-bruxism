@@ -1,6 +1,7 @@
 package pl.nkg.brq.android.network;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 
