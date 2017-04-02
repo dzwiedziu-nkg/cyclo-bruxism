@@ -1,6 +1,8 @@
 <resources>
+    <!-- Main -->
     <string name="app_name">Road Quality Tester</string>
 
+    <!-- Login Activity -->
     <string name="login_button">Sign in</string>
     <string name="register_button">Register</string>
     <string name="register_button_done">Ok</string>
@@ -8,31 +10,19 @@
     <string name="username_edit_hint">Login</string>
     <string name="password_edit_hint">Password</string>
 
+    <string name="registration_dialog_title">User registration form</string>
     <string name="username_register_hint">User name</string>
     <string name="password_register_hint">Password</string>
-
-    <string name="enter_user_name_hint">Enter your user name!</string>
-    <string name="enter_password_hint">Enter your password!</string>
-
-    <string name="wrong_password">Wrong password. Try Again!</string>
     <string name="password_register_repeat_hint">Repeat password</string>
-    <string name="register_success">Success!</string>
-    <string name="register_repeat_failure">You have to repeat the password!</string>
-    <string name="registration_failure_toast">Name alredy in use!</string>
-    <string name="registartion_success_toast">Registration successful!</string>
 
-    <string name="service_start">Start!</string>
-    <string name="service_end">End!</string>
-    <string name="timeout_exception_toast">Unable to connect with server...</string>
-    <string name="upload_success_toast">Upload successful!</string>
-
-    <string name="title_dialog_select">Select trip:</string>
-    <string name="button_dialog_select">Select</string>
-
+    <!-- Main Activity  -->
     <string name="button_on_text">Start tracking!</string>
     <string name="button_off_text">Stop tracking!</string>
 
     <string name="trip_name_hint">Name...</string>
+    <string name="bike_type_info">"Bike type: "</string>
+    <string name="placement_info">"Phone placement: "</string>
+
     <string name="name_text">"Name: "</string>
     <string name="speed_text">"Speed: "</string>
     <string name="altitude_text">"Altitude: "</string>
@@ -40,17 +30,16 @@
     <string name="noise_text">"Noise level: "</string>
     <string name="distance_text">"Distance: "</string>
 
+    <!-- Action Bar  -->
+    <string name="action_selecet_trip">Select trip</string>
+    <string name="action_selecet_trip_user_only">Select your trip</string>
+    <string name="action_selecet_terrain">Terrain map</string>
     <string name="action_settings">Settings</string>
     <string name="action_quit">Quit</string>
-    <string name="settings_activity_detail">Settings</string>
-
-    <string name="bike_type_info">"Bike type: "</string>
-    <string name="placement_info">"Phone placement: "</string>
-    <string name="network_problems_toast">Internet problems...</string>
     <string name="action_logout">Logout and quit</string>
-    <string name="trip_name_key">trip_name</string>
 
-    <string name="pref_user_logged_key">pref_user_login</string>
+    <!-- Settings  -->
+    <string name="settings_activity_detail">Settings</string>
 
     <string name="pref_connection_title">Internet connection</string>
     <string name="pref_connection_key">connection_type</string>
@@ -66,19 +55,41 @@
     <string name="pref_sharing_key">public_availability</string>
     <string name="pref_sharing_summary">Check if you want to share your data with others!</string>
 
-    <string name="title_activity_trip_map">Map</string>
-    <string name="title_activity_trip_maps">Map</string>
+    <!-- Trip selection dialog -->
+    <string name="title_dialog_select">Select trip: </string>
+    <string name="button_dialog_select">Select</string>
+
+    <!-- Maps  -->
+    <string name="title_activity_trip_map">Trip map</string>
+    <string name="title_activity_terrain_map">Terrain map</string>
+
+    <!-- Toasts  -->
+    <string name="enter_user_name_hint_toast">Enter your user name!</string>
+    <string name="enter_password_hint_toast">Enter your password!</string>
+    <string name="registration_repeat_failure_toast">You have to repeat the password!</string>
+    <string name="registration_failure_already_used_toast">Name already in use!</string>
+    <string name="registartion_success_toast">Registration successful!</string>
+    <string name="wrong_password_toast">Wrong password. Try Again!</string>
+
+    <string name="service_start_toast">Tracking started!</string>
+
+    <string name="timeout_exception_toast">Unable to connect with server...</string>
+    <string name="upload_success_toast">Upload successful!</string>
+    <string name="network_problems_toast">Internet problems...</string>
 
     <string name="file_saved_locally_toast">File saved locally...</string>
     <string name="backlog_file_sent_toast">Backlog file sent!</string>
+    <string name="nothing_to_send_toast">Nothing to send!</string>
+    <string name="local_data_upload_toast">Uploading local data...</string>
 
-    <string name="action_selecet_trip">Select trip</string>
-    <string name="action_selecet_trip_user_only">Select your trip</string>
+    <!-- Preferences keys -->
+    <string name="pref_user_logged_key">pref_user_login</string>
+    <string name="trip_name_key">trip_name</string>
     <string name="trip_array_key">tripArray</string>
     <string name="trip_bike_key">tripPhone</string>
     <string name="trip_phone_key">tripBike</string>
-    <string name="action_selecet_terrain">Terrain map</string>
-    <string name="nothing_to_send_toast">Nothing to send!</string>
-    <string name="file_list_key">fileList</string>
-    <string name="local_data_upload_toast">Uploading local data...</string>
+
+    <!--string name="register_success">Success!</string-->
+    <!--string name="service_end">End!</string-->
+    <!--string name="file_list_key">fileList</string-->
 </resources>

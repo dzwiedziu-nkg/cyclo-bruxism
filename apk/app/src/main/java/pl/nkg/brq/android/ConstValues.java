@@ -20,6 +20,7 @@ public class ConstValues {
     public static final String API_KEY = "AIzaSyBZGDRVjIgsqDaxBhkOCXkNCoLWNYEPw78";
     public static final String DIRECTORY_NAME = "RoadTester";
 
+    // Kolory którymi na mapie są oznaczane poszczególne oceny odcinków podróży
     public static final int colorGradeOne = Color.rgb(58, 240, 22);
     public static final int colorGradeTwo = Color.rgb(142, 240, 22);
     public static final int colorGradeThree = Color.rgb(203, 240, 22);
@@ -31,6 +32,7 @@ public class ConstValues {
     public static final int colorGradeNine = Color.rgb(240, 70, 22);
     public static final int colorGradeTen = Color.rgb(240, 40, 22);
 
+    // Półprzezroczyste kolory którymi oznaczane na mapie są ocecny z danego rejonu
     public static final int colorTransparentGradeOne = Color.argb(80, 58, 240, 22);
     public static final int colorTransparentGradeTwo = Color.argb(80, 142, 240, 22);
     public static final int colorTransparentGradeThree = Color.argb(80, 203, 240, 22);

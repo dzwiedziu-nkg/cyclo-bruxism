@@ -63,7 +63,6 @@ public class SensorsService extends Service {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.ENGLISH);
     private static final String TAG = SensorsService.class.getSimpleName();
 
-    // TODO: konfigurowalne
     private static final String BLE_ADDRESS = "98:4F:EE:0F:90:DC";
     private static final String BLUETOOTH_ADDRESS = "98:D3:33:80:73:28";
 
@@ -154,7 +153,7 @@ public class SensorsService extends Service {
                 fileName = (String) myIntent.getExtras().get(getString(R.string.trip_name_key));
                 tripDate = dateFormat.format(new Date());
 
-                //zapasowa nazwa jeśli żadnej nie podano:
+                // Domyślna nazwa jeśli użytkownik żadnej nie podał:
                 if( fileName.equals("")) {
                     fileName = "brq_" + tripDate;
                 }
@@ -175,11 +174,13 @@ public class SensorsService extends Service {
             }
         });
         mWriteThread.start();
-        Toast.makeText(SensorsService.this, R.string.service_start, Toast.LENGTH_SHORT).show();
+        Toast.makeText(SensorsService.this, R.string.service_start_toast, Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 
-    // Dodanie pojedynczego pomiaru do kolejki, oraz sprawdzanie poprawności danych
+    /**
+     * Dodanie pojedynczego pomiaru do kolejki, oraz sprawdzanie poprawności danych
+     */
     private void putRecordInQueue() {
         SensorsRecord record = new SensorsRecord();
         final Location location = mLocation;
@@ -196,13 +197,14 @@ public class SensorsService extends Service {
         record.soundNoise = mNoise.getValue().getValue();
         record.shake = mQuake.getValue().getMaxValue();
 
-        // zabezpiecznie przed zapisywaniem niepoprawnych danych dźwiękowych
+        // Zabezpiecznie przed zapisywaniem niepoprawnych danych dźwiękowych
+        // Na niektórych modelach telefonów kilka pierwszych pomiarów głośności zwraca wartość nieskończoną
         if (Double.isInfinite(record.soundNoise)){
             return;
         }
 
-        // zabezpieczenie przed zapisywaniem danych zapisanych zanim złapał GPS
-        // opcja SAVE_EMPTY_DATA pozwala na zapisa takich danych do celów testowych
+        // Zabezpieczenie przed zapisywaniem danych zapisanych zanim złapał GPS
+        // Opcja SAVE_EMPTY_DATA pozwala na zapisywanie takich danych w celu testowania aplikacji
         if (!ConstValues.SAVE_EMPTY_DATA && record.latitude == 0.0 && record.longitude == 0.0){
             return;
         }
@@ -217,7 +219,9 @@ public class SensorsService extends Service {
         EventBus.getDefault().post(record);
     }
 
-    // Zapisanie danych do obiektu JSON i ich wysłanie, jeśli to możliwe
+    /**
+     * Zapisanie danych do obiektu JSON i ich wysłanie na serwer, jeśli to możliwe
+     */
     private void writeRecord() {
         jsonObjectMain = new JSONObject();
         JSONArray jsonArrayMain = new JSONArray();
@@ -259,19 +263,22 @@ public class SensorsService extends Service {
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         String connectionType = preferences.getString(getString(R.string.pref_connection_key), "");
 
-        //wysyłanie danych przez wifi
+        // Wysyłanie danych przez wifi
         if (activeNetworkInfo != null && activeNetworkInfo.isConnected() && activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
             sendFile();
-        //wysyłanie danych przez internet, jeżeli użytkownik sie zgodził
+        // Wysyłanie danych przez internet, jeżeli nie ma wifi a użytkownik zgodził się na używanie internetu
         } else if(activeNetworkInfo != null && activeNetworkInfo.isConnected() && connectionType.equals("internet")){
             sendFile();
-        //lokalne zapisanie danych
+        // Lokalne zapisanie danych
         } else {
             fileAccess.saveJSONFile(jsonObjectMain , fileName, userName, bikeType, phonePlacement, isPublic, tripDate);
             makeToast(getString(R.string.file_saved_locally_toast));
         }
     }
 
+    /**
+     * Metoda obsługująca wysyłanie danych na serwer oraz pokazywanie informacji o rezultacie użytkownikowi
+     */
     public void sendFile() {
         String userName = preferences.getString(getString(R.string.pref_user_logged_key), "");
         String bikeType = preferences.getString(getString(R.string.pref_bike_key), "");
@@ -312,7 +319,10 @@ public class SensorsService extends Service {
         mWriteThread.interrupt();
     }
 
-
+    /**
+     * Metoda ułatwiająca pokazywanie toast
+     * @param text - tekst do wyświetlenia
+     */
     private void makeToast(final String text){
         handler.post(new Runnable() {
             @Override

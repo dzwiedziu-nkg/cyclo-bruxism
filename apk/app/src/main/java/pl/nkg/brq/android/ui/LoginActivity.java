@@ -62,21 +62,26 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
 
         if ( userName.equals("") ) {
-            Toast.makeText(getApplicationContext(), R.string.enter_user_name_hint,Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.enter_user_name_hint_toast,Toast.LENGTH_LONG).show();
             return;
         }
 
         if ( password.equals("") ) {
-            Toast.makeText(getApplicationContext(), R.string.enter_password_hint,Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.enter_password_hint_toast,Toast.LENGTH_LONG).show();
             return;
         }
 
-        //domyslne chaslo bez dostepu do internetu
+        /*
+        // domyślne hasło do testowania
         if ( userName.equals("admin") && password.equals("admin") ) {
             startMainActivity();
             return;
         }
+        */
 
+        // Wysyłamy na serwer zapytanie o poprawność loginu i hasła
+        // Na ekranie wyświetlane jest odpowiednie powiadomienie w przypadku niepoprawnego hasła
+        // lub niemożliwości połączenia z internetem
         try {
             String response =  new NetworkAccessLogin().execute(userName, password).get();
             if ( response.equals("true") ) {
@@ -86,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 startMainActivity();
             } else if (response.equals("false")){
-                Toast.makeText(getApplicationContext(), getString(R.string.wrong_password), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.wrong_password_toast), Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
@@ -100,6 +105,7 @@ public class LoginActivity extends AppCompatActivity {
     public void onRegister(View view){
         final Dialog myDialog = new Dialog(this);
         myDialog.setContentView(R.layout.register_form);
+        myDialog.setTitle(R.string.registration_dialog_title);
 
         myDialog.show();
 
@@ -159,7 +165,7 @@ public class LoginActivity extends AppCompatActivity {
                     sendRegisterInfo(newUserName, newUserPassword);
                 } else {
                     registerToast = Toast.makeText(getApplicationContext(),
-                            getString(R.string.register_repeat_failure),
+                            getString(R.string.registration_repeat_failure_toast),
                             Toast.LENGTH_SHORT);
                     registerToast.show();
                 }
@@ -192,7 +198,7 @@ public class LoginActivity extends AppCompatActivity {
             if ( response.equals("true") ) {
                 Toast.makeText(getApplicationContext(), R.string.registartion_success_toast, Toast.LENGTH_SHORT).show();
             } else if (response.equals("false")){
-                Toast.makeText(getApplicationContext(), R.string.registration_failure_toast, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.registration_failure_already_used_toast, Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();

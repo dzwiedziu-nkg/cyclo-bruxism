@@ -22,10 +22,10 @@
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ui.SettingsActivity"
             android:label="@string/settings_activity_detail"
@@ -43,20 +43,17 @@
             android:enabled="true"
             android:exported="false" />
 
-        <service
-            android:name=".files.FileBacklogUpload"/>
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
         <activity
             android:name=".maps.TripMapsActivity"
-            android:label="@string/title_activity_trip_maps"></activity>
+            android:label="@string/title_activity_trip_map"></activity>
 
         <activity
             android:name=".maps.TerrainMapsActivity"
-            android:label="@string/title_activity_trip_maps"></activity>
+            android:label="@string/title_activity_terrain_map"></activity>
     </application>
 
 </manifest>

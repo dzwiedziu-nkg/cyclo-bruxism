@@ -209,7 +209,9 @@ public class MainActivity extends AppCompatActivity {
         EventBus.getDefault().unregister(this);
     }
 
-    // Wyszukanie zapisanych lokalnie plików i ich wysłanie jeśli to możliwe
+    /**
+     * Wyszukanie zapisanych lokalnie plików i ich wysłanie jeśli to możliwe
+     */
     protected void sendStoredFiles(){
         if (ConstValues.DATA_SENDING_ACTIVE == false){
             return;
@@ -228,12 +230,13 @@ public class MainActivity extends AppCompatActivity {
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         String connectionType = sharedPreferences.getString(getString(R.string.pref_connection_key), "");
 
-        // Sprawdzamy czy jest połaczenie
+        // Sprawdzamy czy jest połaczenie internetowe
         if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
            return;
         }
 
-        // Sprawdzamy czy połączenie odpowiada temu wybranemu przez użytkownika
+        // Sprawdzamy czy połączenie odpowiada temu wybranemu przez użytkownika w opcjach
+        // (wifi lub internet)
         if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI || connectionType.equals("internet")){
             new FileBacklogUpload(getApplicationContext()).execute(fileList);
 
@@ -241,7 +244,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //Opis jakiego rowera używamy itp...
+    /**
+     * Odświeżenie wyświetlanego na ekranie opisu używanego rowera i położenia telefonu
+     */
     protected void updateDescription() {
         String bikePreference = sharedPreferences.getString(getString(R.string.pref_bike_key), "");
         String[] bikeValues = getResources().getStringArray(R.array.bike_array_values);
@@ -261,6 +266,9 @@ public class MainActivity extends AppCompatActivity {
         placementTextView.setText(getString(R.string.placement_info) + placementText);
     }
 
+    /**
+     * Metoda wywoływana po kliknięciu przycisku rozpoczęcia/zakończenia podróży
+     */
     @OnClick(R.id.button_on)
     public void onButtonOnClick() {
         if(trackingToggle == false) {
@@ -323,6 +331,10 @@ public class MainActivity extends AppCompatActivity {
         Log.d("APP", "TEST---------");
     }
 
+    /**
+     * Okienko w którym wybieramy podróż którą chcemy obejrzeć na mapie
+     * @param mode - jakie dane wyświetlić na liście - tylko moje lub wszystkie udostępnione przez użytkowników
+     */
     public void selectTripDialog(String mode){
         final Dialog tripSelectDialog = new Dialog(this);
         tripSelectDialog.setContentView(R.layout.select_trip_dialog);

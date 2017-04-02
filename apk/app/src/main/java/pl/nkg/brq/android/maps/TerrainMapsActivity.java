@@ -47,9 +47,12 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     // Przykładowo przy 0.1f: 10% szerokości wyświetlonej mapy po obu stronach jest załadowane.
     private static float cameraMargin = 0.2f;
 
+    // Szerokość boków rysowanych kwadratów
     private static float polyWidth = 1.0f;
+    // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów
     private static float mapOffset = 0.00005f;
 
+    // Tablica z kolorami dla poszczególnych ocen
     private int[] colorGradeList = new int[11];
 
     @Override
@@ -78,9 +81,12 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         colorGradeList[10] = ConstValues.colorTransparentGradeTen;
     }
 
-    // Przy załadowaniu mapy ustawiamy jej początkową lokacje
-    // CameraIdleListener doświerza dane na mapie za każdym razem kiedy zakończone jest jej przesuwanie
-    // ( a także przy jej pierwszym włączeniu )
+    /**
+     * Przy załadowaniu mapy ustawiamy jej początkową lokacje
+     * CameraIdleListener odświeża dane na mapie za każdym razem kiedy zakończone jest
+     * jej przesuwanie, a także przy jej pierwszym włączeniu
+     * @param googleMap
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -92,7 +98,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         Criteria criteria = new Criteria();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Domyślne położenie mapy (Kraków)
+            // Domyślne położenie mapy (Kraków), jeżeli nie ma pozwolenia na używanie GPS
             startPosition =  new LatLng(50.0847, 19.9596);
         } else {
             Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
@@ -100,7 +106,8 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
                 // Przesunięcie do obecnego miejsca użytkownika
                 startPosition =  new LatLng(location.getLatitude(), location.getLongitude());
             } else {
-                // Domyślne położenie mapy przy braku lokalizacji użytkownika (Kraków)
+                // Domyślne położenie mapy przy braku lokalizacji użytkownika (Kraków),
+                // jeżeli nie udało się pobrać aktualnego położenia użytkownika
                 startPosition =  new LatLng(50.0847, 19.9596);
             }
         }
@@ -115,8 +122,10 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         drawTerrain();
     }
 
-    // Metoda która odczytuje aktualne wymiary mapy ( szerokość i długość geograficzną jej krańców )
-    // i wysyła odpowiednie zapytanie o dane na serwer.
+    /**
+     * Metoda która odczytuje aktualne wymiary mapy ( szerokość i długość geograficzną jej krańców )
+     * i wysyła odpowiednie zapytanie o dane na serwer.
+     */
     private void drawTerrain(){
         LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
 
@@ -169,6 +178,14 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         }
     }
 
+    /**
+     * Metoda pobierająca dane z serwera na podstawie aktualnego położenia i wymiarów mapy
+     * @param north - północna krawędź mapy
+     * @param south - południowa krawędź mapy
+     * @param east - wschodnia krawędź mapy
+     * @param west - zachodnia krawędź mapy
+     * @return - true jeżeli udało się pobrać nowe dane, false jeżeli nie
+     */
     private boolean getData(double north, double south, double east, double west){
         try {
             String terrainDataString = new NetworkGetRating().execute(

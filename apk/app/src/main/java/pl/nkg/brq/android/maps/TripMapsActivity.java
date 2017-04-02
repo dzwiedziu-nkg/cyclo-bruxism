@@ -36,8 +36,10 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
 
     // Domyślne przybliżenie mapy
     private static float cameraZoom = 17.0f;
+    // Szerokość linii którą rysujemy drogę
     private static float polyWidth = 4.0f;
 
+    // Tablica z kolorami dla poszczególnych ocen
     private int[] colorGradeList = new int[11];
 
     @Override
@@ -66,7 +68,10 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
         colorGradeList[10] = ConstValues.colorGradeTen;
     }
 
-    // Przy załadowaniu mapy pobieramy dane do wyświetlenia i rysujemy je na mapie
+    /**
+     * Przy załadowaniu mapy pobieramy z serwera dane do wyświetlenia i rysujemy je na mapie
+     * @param googleMap
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -94,7 +99,9 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
         drawTrip();
     }
 
-    // Rysujemy polyline reprezentujący odpowiednimi kolorami przebytą drogę
+    /**
+     * Rysujemy polyline reprezentujący odpowiednimi kolorami przebytą drogę
+     */
     private void drawTrip(){
         LatLng startPosition;
         LatLng endPosition;
