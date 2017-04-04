@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 public class TripMapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -106,17 +107,31 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
         LatLng startPosition;
         LatLng endPosition;
 
+        // Dodawanie znaczników na początku i końcu podróży i przesunięcie mapy
         try {
             startPosition = new LatLng(
-                tripDataArray.getJSONObject(0).getDouble("latitude"),
-                tripDataArray.getJSONObject(0).getDouble("longitude")
+                    tripDataArray.getJSONObject(0).getDouble("latitude"),
+                    tripDataArray.getJSONObject(0).getDouble("longitude")
             );
 
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, cameraZoom));
+
+            String[] bikeValues = getResources().getStringArray(R.array.bike_array_values);
+            String[] bikeEntries = getResources().getStringArray(R.array.bike_array_entries);
+
+            int bikePosition = Arrays.asList(bikeValues).indexOf(tripBikeUsed);
+            String bikeText = bikeEntries[bikePosition];
+
+            String[] placementValues = getResources().getStringArray(R.array.placement_array_values);
+            String[] placementEntries = getResources().getStringArray(R.array.placement_array_entries);
+
+            int placementPosition = Arrays.asList(placementValues).indexOf(tripPhonePlacement);
+            String placementText = placementEntries[placementPosition];
+
             mMap.addMarker(new MarkerOptions()
-                .position(startPosition)
-                .title("Start")
-                .snippet("Bike: " + tripBikeUsed + ", place: " + tripPhonePlacement)).showInfoWindow();
+                    .position(startPosition)
+                    .title("Start")
+                    .snippet("Bike: " + bikeText + ", place: " + placementText)).showInfoWindow();
 
             endPosition = new LatLng(
                     tripDataArray.getJSONObject(tripDataArray.length() - 1).getDouble("latitude"),
@@ -126,32 +141,72 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
             mMap.addMarker(new MarkerOptions()
                     .position(endPosition)
                     .title("End"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-            JSONObject currentRecord;
-            JSONObject nextRecord = tripDataArray.getJSONObject(1);
+        // Rysowanie przebytej drogi
+        // Przy większej ilości wpisów zmniejszonaj zostaje rozdzielczość,
+        // czyli kilka wpisów reprezentowane jest jako jedna linia na mapie z uśrednioną oceną
+        try {
+            JSONObject nextRecord = tripDataArray.getJSONObject(0);
+            JSONObject currentRecord = nextRecord;
 
-            for (int i = 1; i < tripDataArray.length() - 1; i++) {
-                currentRecord = nextRecord;
-                nextRecord = tripDataArray.getJSONObject(i);
+            int entryCount = tripDataArray.length();
+            int drawingInterval = 1;
+            Double rating = 0.0;
 
-                PolylineOptions polylineOptions = new PolylineOptions().
-                    geodesic(true)
-                    .width(polyWidth)
-                    .color(colorGradeList[((Double) currentRecord.getDouble("rating")).intValue()]);
-
-                polylineOptions.add(new LatLng(
-                    currentRecord.getDouble("latitude"),
-                    currentRecord.getDouble("longitude")
-                ));
-
-                polylineOptions.add(new LatLng(
-                    nextRecord.getDouble("latitude"),
-                    nextRecord.getDouble("longitude")
-                ));
-
-                mMap.addPolyline(polylineOptions);
+            if (entryCount < 1000){
+                drawingInterval = 1;
+            } else if (entryCount < 2000) {
+                drawingInterval = 2;
+            } else if (entryCount < 5000) {
+                drawingInterval = 5;
+            } else if (entryCount < 20000) {
+                drawingInterval = 10;
+            } else {
+                drawingInterval = entryCount / 1000;
             }
 
+            for (int i = 1; i < tripDataArray.length() - 1; i++) {
+                nextRecord = tripDataArray.getJSONObject(i);
+                rating += nextRecord.getDouble("rating");
+
+                // Linie rysowane są tylko w obliczonym interwale. Normalnie jest to 1 dla każdej wartości,
+                // ale przy dużej ilości danych interwał się zwiększa
+                if ((i % drawingInterval) == 0) {
+                    rating /= drawingInterval;
+
+                    Log.d("myApp", Integer.toString(i));
+                    // Zabezpieczenie przed niepoprawnymi wartościami:
+                    if (rating < 1.0) {
+                        rating = 1.0;
+                    }
+                    if (rating > 10.0) {
+                        rating = 10.0;
+                    }
+
+                    PolylineOptions polylineOptions = new PolylineOptions().
+                        geodesic(true)
+                        .width(polyWidth)
+                        .color(colorGradeList[rating.intValue()]);
+
+                    polylineOptions.add(new LatLng(
+                        currentRecord.getDouble("latitude"),
+                        currentRecord.getDouble("longitude")
+                    ));
+
+                    polylineOptions.add(new LatLng(
+                        nextRecord.getDouble("latitude"),
+                        nextRecord.getDouble("longitude")
+                    ));
+
+                    mMap.addPolyline(polylineOptions);
+
+                    rating = 0.0;
+                    currentRecord = nextRecord;
+                }
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

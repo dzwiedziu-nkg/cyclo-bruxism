@@ -58,6 +58,7 @@
     <!-- Trip selection dialog -->
     <string name="title_dialog_select">Select trip: </string>
     <string name="button_dialog_select">Select</string>
+    <string name="nothing_to_show_warning">No trips to show!</string>
 
     <!-- Maps  -->
     <string name="title_activity_trip_map">Trip map</string>

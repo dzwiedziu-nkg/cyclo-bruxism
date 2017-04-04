@@ -1,10 +1,14 @@
 package pl.nkg.brq.android.ui;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,6 +31,9 @@ import pl.nkg.brq.android.network.NetworkAccessRegister;
  */
 
 public class LoginActivity extends AppCompatActivity {
+
+    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 801;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 802;
 
     EditText userNameEditText;
     EditText passwordEditText;
@@ -70,14 +77,6 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), R.string.enter_password_hint_toast,Toast.LENGTH_LONG).show();
             return;
         }
-
-        /*
-        // domyślne hasło do testowania
-        if ( userName.equals("admin") && password.equals("admin") ) {
-            startMainActivity();
-            return;
-        }
-        */
 
         // Wysyłamy na serwer zapytanie o poprawność loginu i hasła
         // Na ekranie wyświetlane jest odpowiednie powiadomienie w przypadku niepoprawnego hasła

@@ -105,6 +105,8 @@ public class MainActivity extends AppCompatActivity {
 
     SharedPreferences sharedPreferences;
 
+    private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 803;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,12 +115,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Prompt for permissions
         if (Build.VERSION.SDK_INT >= 23) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                    != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.RECORD_AUDIO,
@@ -139,7 +140,18 @@ public class MainActivity extends AppCompatActivity {
         placementTextView = (TextView) findViewById(R.id.phone_placement_info);
         trackingToggle = false;
         updateDescription();
-        sendStoredFiles();
+
+        // Sprawdzamy czy jest pozwolenie na zapis lokalnych plików
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+        } else {
+            sendStoredFiles();
+        }
     }
 
     @Override
@@ -328,7 +340,38 @@ public class MainActivity extends AppCompatActivity {
 
     public void testButton(View view){
         //test
-        Log.d("APP", "TEST---------");
+        Log.d("APP", "TEST");
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            Log.d("APP", "NIE MA POZWOLENIA");
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+
+
+        } else {
+            Log.d("APP", "JEST POZWOLENIE");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    sendStoredFiles();
+                } else {
+                    Log.d("APP", "BRAK POZWOLENIA");
+                }
+                return;
+            }
+        }
     }
 
     /**
@@ -379,6 +422,12 @@ public class MainActivity extends AppCompatActivity {
         );
         tripListView.setAdapter(adapter);
         tripListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        if ( tripListView.getAdapter().isEmpty() ) {
+            tripListView.getLayoutParams().height = 100;
+            TextView warningText = (TextView) tripSelectDialog.findViewById(R.id.no_trips_warning);
+            warningText.setVisibility(View.VISIBLE);
+        }
 
         Button selectButton = (Button)tripSelectDialog.findViewById(R.id.button_select_trip);
         selectButton.setOnClickListener(new View.OnClickListener() {

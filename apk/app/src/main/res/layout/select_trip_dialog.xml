@@ -10,6 +10,15 @@
         android:layout_marginBottom="8dp"
         android:padding="8dp"/>
 
+    <TextView
+        android:id="@+id/no_trips_warning"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/nothing_to_show_warning"
+        android:visibility="gone"
+        android:padding="8dp"/>
+
     <Button
         android:id="@+id/button_select_trip"
         android:layout_width="150dp"

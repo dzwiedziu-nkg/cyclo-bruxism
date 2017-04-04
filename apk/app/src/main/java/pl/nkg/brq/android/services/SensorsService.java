@@ -66,8 +66,10 @@ public class SensorsService extends Service {
     private static final String BLE_ADDRESS = "98:4F:EE:0F:90:DC";
     private static final String BLUETOOTH_ADDRESS = "98:D3:33:80:73:28";
 
+    // Ilość czasu pomiędzy pomiarami, w milisekundach
     private static final int saveDuration = 500;
-    private static final double GPS_ACCURACY = 100.0f;
+    // Dokładnośc z jaką mierzymy dane, w metrach
+    private static final double GPS_ACCURACY = 50.0f;
 
     private final IBinder mBinder = new LocalBinder();
 
