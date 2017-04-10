@@ -14,7 +14,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="14dp"
         android:hint="@string/username_register_hint" />
 
     <EditText
@@ -28,7 +28,7 @@
         android:layout_below="@+id/username_register"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="6dp"
         android:hint="@string/password_register_hint"/>
 
     <EditText
@@ -42,8 +42,21 @@
         android:layout_below="@+id/password_register"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:hint="@string/password_register_repeat_hint"/>
+
+    <TextView
+        android:id="@+id/repeat_password_warning"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/password_register_repeat"
+        android:text="@string/user_register_password_warning"
+        android:visibility="gone"
+        android:textColor="#ff0000"
+        android:textSize="12sp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="8dp"/>
 
     <Button
         android:id="@+id/button_register_done"
@@ -51,7 +64,7 @@
         android:layout_height="50dp"
         style="@style/Theme.Design.Light"
         android:background="@drawable/main_button"
-        android:layout_below="@+id/password_register_repeat"
+        android:layout_below="@+id/repeat_password_warning"
         android:layout_centerHorizontal="true"
         android:text="@string/register_button_done"
         android:layout_marginBottom="16dp"/>

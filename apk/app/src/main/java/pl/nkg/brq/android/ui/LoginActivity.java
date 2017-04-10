@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText passwordRegisterEditText;
     EditText passwordRepeatRegisterEditText;
     Button registerButton;
+    TextView warningTextView;
 
     SharedPreferences sharedPreferences;
 
@@ -150,7 +152,8 @@ public class LoginActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {}
         });
 
-        registerButton = (Button)myDialog.findViewById(R.id.button_register_done);
+        registerButton = (Button) myDialog.findViewById(R.id.button_register_done);
+        warningTextView = (TextView) myDialog.findViewById(R.id.repeat_password_warning);
         registerButton.setEnabled(false);
         registerButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -180,10 +183,19 @@ public class LoginActivity extends AppCompatActivity {
     public void checkRegisterButton(){
         if( userNameRegisterEditText.getText().toString().equals("") ||
             passwordRegisterEditText.getText().toString().equals("") ||
-            passwordRepeatRegisterEditText.getText().toString().equals("") ) {
+            passwordRepeatRegisterEditText.getText().toString().equals("") ||
+            !passwordRegisterEditText.getText().toString().equals(passwordRepeatRegisterEditText.getText().toString()) ) {
             registerButton.setEnabled(false);
         } else {
             registerButton.setEnabled(true);
+        }
+
+        if (!passwordRegisterEditText.getText().toString().equals(passwordRepeatRegisterEditText.getText().toString()) &&
+            !userNameRegisterEditText.getText().toString().equals("") &&
+            !passwordRegisterEditText.getText().toString().equals("") ) {
+            warningTextView.setVisibility(View.VISIBLE);
+        } else {
+            warningTextView.setVisibility(View.GONE);
         }
     }
 

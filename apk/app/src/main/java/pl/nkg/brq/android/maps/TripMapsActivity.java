@@ -165,7 +165,7 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
             } else if (entryCount < 20000) {
                 drawingInterval = 10;
             } else {
-                drawingInterval = entryCount / 1000;
+                drawingInterval = 20;
             }
 
             for (int i = 1; i < tripDataArray.length() - 1; i++) {
@@ -177,7 +177,6 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
                 if ((i % drawingInterval) == 0) {
                     rating /= drawingInterval;
 
-                    Log.d("myApp", Integer.toString(i));
                     // Zabezpieczenie przed niepoprawnymi wartościami:
                     if (rating < 1.0) {
                         rating = 1.0;

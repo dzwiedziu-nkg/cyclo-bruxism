@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
     TextView mWarningTextView;
 
     EditText nameEditText;
+    TextView sharingInfoView;
     TextView bikeTextView;
     TextView placementTextView;
 
@@ -136,12 +137,14 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         nameEditText = (EditText) findViewById(R.id.trip_name_edit);
+        sharingInfoView = (TextView) findViewById(R.id.sharing_info);
         bikeTextView = (TextView) findViewById(R.id.bike_type_info);
         placementTextView = (TextView) findViewById(R.id.phone_placement_info);
         trackingToggle = false;
         updateDescription();
 
         // Sprawdzamy czy jest pozwolenie na zapis lokalnych plików
+        // Jeśli tak to wywołujemy metodę wysyłającą lokalne dane
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -176,27 +179,35 @@ public class MainActivity extends AppCompatActivity {
         int itemId = item.getItemId();
 
         switch (itemId){
+            // Wyświetla listę podróży do wyświetlenia
+            // Wybór ze wszystkich dostępnych
             case R.id.action_selecet_trip:
                 selectTripDialog(ConstValues.MODE_ALL_USERS);
                 return true;
 
+            // Wyświetla listę podróży do wyświetlenia
+            // Wybór z podróży należących do użytkownika
             case R.id.action_selecet_trip_user_only:
                 selectTripDialog(ConstValues.MODE_USER_ONLY);
                 return true;
 
+            // Wyświetla mapę terenową
             case R.id.action_selecet_terrain:
                 startTerrainMap();
                 return true;
 
+            // Wyświetla opcje
             case R.id.action_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
 
+            // Wyjście z aplikacji bez wylogowania
             case R.id.action_quit:
                 finish();
                 return true;
 
+            // Wyjście z aplikacji z wylogowaniem się
             case R.id.action_logout:
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(getString(R.string.pref_user_logged_key), "");
@@ -232,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         FileAccess fileAccess = new FileAccess();
         ArrayList<File> fileList = fileAccess.getAllSavedData();
 
-        // Sprawdzamy czy są dane do wysłania
+        // Sprawdzamy czy są pliki do wysłania
         if (fileList.isEmpty()){
             return;
         }
@@ -261,6 +272,15 @@ public class MainActivity extends AppCompatActivity {
      */
     protected void updateDescription() {
         String bikePreference = sharedPreferences.getString(getString(R.string.pref_bike_key), "");
+
+        boolean sharing = sharedPreferences.getBoolean(getString(R.string.pref_sharing_key), true);
+        String sharingText = "";
+        if (sharing) {
+            sharingText = getString(R.string.sharing_yes_info);
+        } else {
+            sharingText = getString(R.string.sharing_no_info);
+        }
+
         String[] bikeValues = getResources().getStringArray(R.array.bike_array_values);
         String[] bikeEntries = getResources().getStringArray(R.array.bike_array_entries);
 
@@ -274,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
         int placementPosition = Arrays.asList(placementValues).indexOf(placementPreference);
         String placementText = placementEntries[placementPosition];
 
+        sharingInfoView.setText(sharingText);
         bikeTextView.setText(getString(R.string.bike_type_info) + bikeText);
         placementTextView.setText(getString(R.string.placement_info) + placementText);
     }
@@ -320,6 +341,9 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(SensorsServiceState state) {}
 
+    /**
+     * Aktualizacja wpisów z wynikami na ekranie
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(SensorsRecord record) {
         mNameTextView.setText(getString(R.string.name_text) + nameEditText.getText().toString());
@@ -338,33 +362,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void testButton(View view){
-        //test
-        Log.d("APP", "TEST");
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            Log.d("APP", "NIE MA POZWOLENIA");
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-
-
-        } else {
-            Log.d("APP", "JEST POZWOLENIE");
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           String permissions[],
+                                           int[] grantResults) {
+
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     sendStoredFiles();
                 } else {
                     Log.d("APP", "BRAK POZWOLENIA");
@@ -387,6 +392,7 @@ public class MainActivity extends AppCompatActivity {
         String userName = sharedPreferences.getString(getString(R.string.pref_user_logged_key), "");
         ArrayList<TripObject> tripObjects = new ArrayList<>();
 
+        // Pobieramy listę podróży do wyświetlenia
         try {
             String response =  new NetworkGetTripList().execute(userName, mode).get();
             if (response == null) {
@@ -413,6 +419,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        // Wyświetlanie listy podróży i obsługa odpowiednich operacji
         final ListView tripListView = (ListView) tripSelectDialog.findViewById(R.id.trip_listview);
 
         ArrayAdapter<TripObject> adapter = new ArrayAdapter<TripObject>(
@@ -450,8 +457,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Uruchomienie mapy terenowej
+     */
     public void startTerrainMap(){
         Intent mapIntent = new Intent(getApplicationContext(), TerrainMapsActivity.class);
         startActivity(mapIntent);
+    }
+
+    /**
+     * Testowanie
+     */
+    public void testButton(View view){
+        Log.d("APP", "TEST");
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            Log.d("APP", "NIE MA POZWOLENIA");
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+
+        } else {
+            Log.d("APP", "JEST POZWOLENIE");
+        }
     }
 }

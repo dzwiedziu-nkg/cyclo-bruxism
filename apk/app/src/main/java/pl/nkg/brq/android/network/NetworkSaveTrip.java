@@ -58,8 +58,6 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
                                 String isPublic,
                                 String tripDate) {
 
-        Log.d("APP", "TEST");
-
         FileAccess fileAccess = new FileAccess();
         String response = "false";
 
@@ -119,9 +117,6 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
                 response = IOUtils.toString(in, encoding);
 
                 urlConnection.disconnect();
-
-                Log.d("APP", "JSONArray: " + Integer.toString(jsonArray.length()));
-                Log.d("APP", "JSONArrayRest: " + Integer.toString(jsonArrayRest.length()));
 
                 //zapisanie pliku na dysku w przypadku błędu przesyłania
                 if (!response.equals("true")) {

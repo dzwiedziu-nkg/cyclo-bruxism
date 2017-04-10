@@ -26,6 +26,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import pl.nkg.brq.android.ConstValues;
@@ -39,10 +41,14 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     private GoogleMap mMap;
     private JSONArray terrainDataArray;
 
-    // Domyślne przybliżenie mapy
+    // Domyślne przybliżenie mapy ( mniejsza wartość to większe oddalenie mapy! )
     private static float cameraZoom = 17.0f;
-    // Przybliżenie powyżeje którego mapa przestanie ładować dane ( mniejsza wartość to większe oddalenie mapy! )
-    private static float cameraMaxZoom = 14.0f;
+    // Przybliżenie powyżeje którego mapa zmniejsza rozdzielczość i kumuluje dane w większe kwadraty
+    private static float cameraLowResZoom = 15.5f;
+    // Przybliżenie powyżeje którego mapa ponownie zmniejsza rozdzielczość
+    private static float cameraLowerResZoom = 12.5f;
+    // Przybliżenie powyżeje którego mapa przestanie ładować dane
+    private static float cameraMinZoom = 10.0f;
     // Wyrażony procentowo obszar ekranu poza któym ładują się dane.
     // Przykładowo przy 0.1f: 10% szerokości wyświetlonej mapy po obu stronach jest załadowane.
     private static float cameraMargin = 0.2f;
@@ -51,6 +57,10 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     private static float polyWidth = 1.0f;
     // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów
     private static float mapOffset = 0.00005f;
+    // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów przy zmniejszonej rozdzielczości
+    private static float lowResMapOffset = 0.0005f;
+    // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów przy najmniejszej rozdzielczości
+    private static float lowerResMapOffset = 0.005f;
 
     // Tablica z kolorami dla poszczególnych ocen
     private int[] colorGradeList = new int[11];
@@ -94,10 +104,12 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         LatLng startPosition = null;
 
         // Pobieramy obecne położenie użytkownika i jeśli się uda to przesuwamy tam mapę
+        // Tych danych często nie da się pobrać ponieważ istnieją tylko jeżeli używaliśmy wcześniej GPS
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Domyślne położenie mapy (Kraków), jeżeli nie ma pozwolenia na używanie GPS
             startPosition =  new LatLng(50.0847, 19.9596);
         } else {
@@ -125,6 +137,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     /**
      * Metoda która odczytuje aktualne wymiary mapy ( szerokość i długość geograficzną jej krańców )
      * i wysyła odpowiednie zapytanie o dane na serwer.
+     * Jeżeli mapa jest za bardzo oddalona to nie wysyłamy zapytania i nic nie rysujemy
      */
     private void drawTerrain(){
         LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
@@ -135,7 +148,8 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         double east = bounds.southwest.longitude;
         double zoom = mMap.getCameraPosition().zoom;
 
-        if (zoom < cameraMaxZoom) {
+        Log.d("myApp", Double.toString(zoom));
+        if (zoom < cameraMinZoom) {
             mMap.clear();
             return;
         }
@@ -156,23 +170,126 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         try {
             mMap.clear();
 
-            for (int i = 0; i < terrainDataArray.length(); i++) {
-                JSONObject record = terrainDataArray.getJSONObject(i);
+            if (zoom > cameraLowResZoom) {
+                for (int i = 0; i < terrainDataArray.length(); i++) {
+                    JSONObject record = terrainDataArray.getJSONObject(i);
 
-                PolygonOptions polygonOptions = new PolygonOptions().
-                        geodesic(true).
-                        strokeWidth(polyWidth).
-                        fillColor(colorGradeList[((Double) record.getDouble("rating")).intValue()]).
-                        strokeColor(Color.rgb(255, 255, 255));
+                    PolygonOptions polygonOptions = new PolygonOptions().
+                            geodesic(true).
+                            strokeWidth(polyWidth).
+                            fillColor(colorGradeList[((Double) record.getDouble("rating")).intValue()]).
+                            strokeColor(Color.rgb(255, 255, 255));
 
-                polygonOptions.add(new LatLng(record.getDouble("latitude") + mapOffset, record.getDouble("longitude") + mapOffset),
-                                   new LatLng(record.getDouble("latitude") + mapOffset, record.getDouble("longitude") - mapOffset),
-                                   new LatLng(record.getDouble("latitude") - mapOffset, record.getDouble("longitude") - mapOffset),
-                                   new LatLng(record.getDouble("latitude") - mapOffset, record.getDouble("longitude") + mapOffset));
+                    polygonOptions.add(new LatLng(record.getDouble("latitude") + mapOffset, record.getDouble("longitude") + mapOffset),
+                                       new LatLng(record.getDouble("latitude") + mapOffset, record.getDouble("longitude") - mapOffset),
+                                       new LatLng(record.getDouble("latitude") - mapOffset, record.getDouble("longitude") - mapOffset),
+                                       new LatLng(record.getDouble("latitude") - mapOffset, record.getDouble("longitude") + mapOffset));
 
-                mMap.addPolygon(polygonOptions);
+                    mMap.addPolygon(polygonOptions);
+                }
+            } else if (zoom > cameraLowerResZoom) {
+                HashMap<String, Double[]> lowResTerrainDataMap = new HashMap<String, Double[]>();
+                String key;
+                Double[] value;
+
+                Double latitude;
+                Double longitude;
+                Double rating;
+
+                for (int i = 0; i < terrainDataArray.length(); i++) {
+                    JSONObject record = terrainDataArray.getJSONObject(i);
+
+                    latitude = record.getDouble("latitude");
+                    longitude = record.getDouble("longitude");
+                    rating = record.getDouble("rating");
+
+                    key = String.format("%.3f", latitude) + "-" + String.format("%.3f", longitude) ;
+                    value = new Double[2];
+
+                    if (lowResTerrainDataMap.get(key) == null) {
+                        value[0] = 1.0;
+                        value[1] = rating;
+                        lowResTerrainDataMap.put(key, value);
+                    } else {
+                        value[0] = lowResTerrainDataMap.get(key)[0] + 1.0;
+                        value[1] = lowResTerrainDataMap.get(key)[1] + rating;
+                        lowResTerrainDataMap.put(key, value);
+                    }
+                }
+
+                for(HashMap.Entry<String, Double[]> entry : lowResTerrainDataMap.entrySet()) {
+                    key = entry.getKey();
+                    value = entry.getValue();
+
+                    latitude =  Double.parseDouble(key.split("-")[0].replace(",", "."));
+                    longitude =  Double.parseDouble(key.split("-")[1].replace(",", "."));
+                    int intRating = ((Double)(value[1] / value[0])).intValue();
+
+                    PolygonOptions polygonOptions = new PolygonOptions().
+                            geodesic(true).
+                            strokeWidth(polyWidth).
+                            fillColor(colorGradeList[intRating]).
+                            strokeColor(Color.rgb(255, 255, 255));
+
+                    polygonOptions.add(new LatLng(latitude + lowResMapOffset, longitude + lowResMapOffset),
+                                       new LatLng(latitude + lowResMapOffset, longitude - lowResMapOffset),
+                                       new LatLng(latitude - lowResMapOffset, longitude - lowResMapOffset),
+                                       new LatLng(latitude - lowResMapOffset, longitude + lowResMapOffset));
+
+                    mMap.addPolygon(polygonOptions);
+                }
+            } else {
+                HashMap<String, Double[]> lowResTerrainDataMap = new HashMap<String, Double[]>();
+                String key;
+                Double[] value;
+
+                Double latitude;
+                Double longitude;
+                Double rating;
+
+                for (int i = 0; i < terrainDataArray.length(); i++) {
+                    JSONObject record = terrainDataArray.getJSONObject(i);
+
+                    latitude = record.getDouble("latitude");
+                    longitude = record.getDouble("longitude");
+                    rating = record.getDouble("rating");
+
+                    key = String.format("%.2f", latitude) + "-" + String.format("%.2f", longitude) ;
+                    value = new Double[2];
+
+                    if (lowResTerrainDataMap.get(key) == null) {
+                        value[0] = 1.0;
+                        value[1] = rating;
+                        lowResTerrainDataMap.put(key, value);
+                    } else {
+                        value[0] = lowResTerrainDataMap.get(key)[0] + 1.0;
+                        value[1] = lowResTerrainDataMap.get(key)[1] + rating;
+                        lowResTerrainDataMap.put(key, value);
+                    }
+                }
+
+                for(HashMap.Entry<String, Double[]> entry : lowResTerrainDataMap.entrySet()) {
+                    key = entry.getKey();
+                    value = entry.getValue();
+
+                    latitude =  Double.parseDouble(key.split("-")[0].replace(",", "."));
+                    longitude =  Double.parseDouble(key.split("-")[1].replace(",", "."));
+                    int intRating = ((Double)(value[1] / value[0])).intValue();
+
+                    PolygonOptions polygonOptions = new PolygonOptions().
+                            geodesic(true).
+                            strokeWidth(polyWidth).
+                            fillColor(colorGradeList[intRating]).
+                            strokeColor(Color.rgb(255, 255, 255));
+
+                    polygonOptions.add(new LatLng(latitude + lowerResMapOffset, longitude + lowerResMapOffset),
+                            new LatLng(latitude + lowerResMapOffset, longitude - lowerResMapOffset),
+                            new LatLng(latitude - lowerResMapOffset, longitude - lowerResMapOffset),
+                            new LatLng(latitude - lowerResMapOffset, longitude + lowerResMapOffset));
+
+                    mMap.addPolygon(polygonOptions);
+                }
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }

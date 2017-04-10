@@ -14,12 +14,15 @@
     <string name="username_register_hint">User name</string>
     <string name="password_register_hint">Password</string>
     <string name="password_register_repeat_hint">Repeat password</string>
+    <string name="user_register_password_warning">Passwords do not match</string>
 
     <!-- Main Activity  -->
     <string name="button_on_text">Start tracking!</string>
     <string name="button_off_text">Stop tracking!</string>
 
     <string name="trip_name_hint">Name...</string>
+    <string name="sharing_yes_info">"This trip will be public!"</string>
+    <string name="sharing_no_info">"This trip will be private!"</string>
     <string name="bike_type_info">"Bike type: "</string>
     <string name="placement_info">"Phone placement: "</string>
 
@@ -90,7 +93,4 @@
     <string name="trip_bike_key">tripPhone</string>
     <string name="trip_phone_key">tripBike</string>
 
-    <!--string name="register_success">Success!</string-->
-    <!--string name="service_end">End!</string-->
-    <!--string name="file_list_key">fileList</string-->
 </resources>
