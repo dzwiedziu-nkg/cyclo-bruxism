@@ -69,6 +69,7 @@ public class SensorsService extends Service {
     // Ilość czasu pomiędzy pomiarami, w milisekundach
     private static final int saveDuration = 500;
     // Dokładnośc z jaką mierzymy dane, w metrach
+    // Dane z GPS o mniejszej dokładności nie zostają zapisane
     private static final double GPS_ACCURACY = 50.0f;
 
     private final IBinder mBinder = new LocalBinder();
@@ -156,7 +157,7 @@ public class SensorsService extends Service {
                 tripDate = dateFormat.format(new Date());
 
                 // Domyślna nazwa jeśli użytkownik żadnej nie podał:
-                if( fileName.equals("")) {
+                if (fileName.equals("")) {
                     fileName = "brq_" + tripDate;
                 }
 
@@ -240,9 +241,9 @@ public class SensorsService extends Service {
                 jsonRecord.put("soundNoise", record.soundNoise);
                 jsonRecord.put("shake", record.shake);
 
-                // jsonRecord.put("timestamp", record.timestamp);
-                // jsonRecord.put("altitude", record.altitude);
-                // jsonRecord.put("accuracy", record.accuracy);
+                //jsonRecord.put("timestamp", record.timestamp);
+                //jsonRecord.put("altitude", record.altitude);
+                //jsonRecord.put("accuracy", record.accuracy);
                 //jsonRecord.put("speed", record.speed);
                 //jsonRecord.put("distance", record.distance);
 

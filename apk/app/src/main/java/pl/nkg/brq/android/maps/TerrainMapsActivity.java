@@ -78,6 +78,9 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         mapFragment.getMapAsync(this);
     }
 
+    /**
+     * Przypisanie kolorów do odpoewiednich ocen
+     */
     private void bindColors() {
         colorGradeList[1] = ConstValues.colorTransparentGradeOne;
         colorGradeList[2] = ConstValues.colorTransparentGradeTwo;
@@ -170,6 +173,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         try {
             mMap.clear();
 
+            // Mapa z najwyższą rozdzielczością
             if (zoom > cameraLowResZoom) {
                 for (int i = 0; i < terrainDataArray.length(); i++) {
                     JSONObject record = terrainDataArray.getJSONObject(i);
@@ -187,6 +191,8 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
 
                     mMap.addPolygon(polygonOptions);
                 }
+
+            // Mapa ze średnią rozdzielczością
             } else if (zoom > cameraLowerResZoom) {
                 HashMap<String, Double[]> lowResTerrainDataMap = new HashMap<String, Double[]>();
                 String key;
@@ -238,6 +244,8 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
 
                     mMap.addPolygon(polygonOptions);
                 }
+
+            // Mapa z najniższą rozdzielczością
             } else {
                 HashMap<String, Double[]> lowResTerrainDataMap = new HashMap<String, Double[]>();
                 String key;

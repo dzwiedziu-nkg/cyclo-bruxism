@@ -56,6 +56,9 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
         mapFragment.getMapAsync(this);
     }
 
+    /**
+     * Przypisanie kolorów do odpoewiednich ocen
+     */
     private void bindColors(){
         colorGradeList[1] = ConstValues.colorGradeOne;
         colorGradeList[2] = ConstValues.colorGradeTwo;
