@@ -56,11 +56,11 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     // Szerokość boków rysowanych kwadratów
     private static float polyWidth = 1.0f;
     // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów
-    private static float mapOffset = 0.00005f;
+    private static float resOneMapOffset = 0.00005f;
     // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów przy zmniejszonej rozdzielczości
-    private static float lowResMapOffset = 0.0005f;
+    private static float resThreeMapOffset = 0.0005f;
     // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów przy najmniejszej rozdzielczości
-    private static float lowerResMapOffset = 0.005f;
+    private static float resFiveMapOffset = 0.005f;
 
     // Tablica z kolorami dla poszczególnych ocen
     private int[] colorGradeList = new int[11];
@@ -150,6 +150,8 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         double west = bounds.northeast.longitude;
         double east = bounds.southwest.longitude;
         double zoom = mMap.getCameraPosition().zoom;
+        int resolution;
+        float offset;
 
         Log.d("myApp", Double.toString(zoom));
         if (zoom < cameraMinZoom) {
@@ -165,7 +167,18 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         west += weOffset;
         east -= weOffset;
 
-        if (!getData(north, south, east, west)){
+        if (zoom > cameraLowResZoom) {
+            resolution = 1;
+            offset = resOneMapOffset;
+        } else if (zoom > cameraLowerResZoom) {
+            resolution = 3;
+            offset = resThreeMapOffset;
+        } else {
+            resolution = 5;
+            offset = resFiveMapOffset;
+        }
+
+        if (!getData(north, south, east, west, resolution)){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -173,130 +186,21 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         try {
             mMap.clear();
 
-            // Mapa z najwyższą rozdzielczością
-            if (zoom > cameraLowResZoom) {
-                for (int i = 0; i < terrainDataArray.length(); i++) {
-                    JSONObject record = terrainDataArray.getJSONObject(i);
+            for (int i = 0; i < terrainDataArray.length(); i++) {
+                JSONObject record = terrainDataArray.getJSONObject(i);
 
-                    PolygonOptions polygonOptions = new PolygonOptions().
-                            geodesic(true).
-                            strokeWidth(polyWidth).
-                            fillColor(colorGradeList[((Double) record.getDouble("rating")).intValue()]).
-                            strokeColor(Color.rgb(255, 255, 255));
+                PolygonOptions polygonOptions = new PolygonOptions().
+                        geodesic(true).
+                        strokeWidth(polyWidth).
+                        fillColor(colorGradeList[((Double) record.getDouble("rating")).intValue()]).
+                        strokeColor(Color.rgb(255, 255, 255));
 
-                    polygonOptions.add(new LatLng(record.getDouble("latitude") + mapOffset, record.getDouble("longitude") + mapOffset),
-                                       new LatLng(record.getDouble("latitude") + mapOffset, record.getDouble("longitude") - mapOffset),
-                                       new LatLng(record.getDouble("latitude") - mapOffset, record.getDouble("longitude") - mapOffset),
-                                       new LatLng(record.getDouble("latitude") - mapOffset, record.getDouble("longitude") + mapOffset));
+                polygonOptions.add(new LatLng(record.getDouble("latitude") + offset, record.getDouble("longitude") + offset),
+                                   new LatLng(record.getDouble("latitude") + offset, record.getDouble("longitude") - offset),
+                                   new LatLng(record.getDouble("latitude") - offset, record.getDouble("longitude") - offset),
+                                   new LatLng(record.getDouble("latitude") - offset, record.getDouble("longitude") + offset));
 
-                    mMap.addPolygon(polygonOptions);
-                }
-
-            // Mapa ze średnią rozdzielczością
-            } else if (zoom > cameraLowerResZoom) {
-                HashMap<String, Double[]> lowResTerrainDataMap = new HashMap<String, Double[]>();
-                String key;
-                Double[] value;
-
-                Double latitude;
-                Double longitude;
-                Double rating;
-
-                for (int i = 0; i < terrainDataArray.length(); i++) {
-                    JSONObject record = terrainDataArray.getJSONObject(i);
-
-                    latitude = record.getDouble("latitude");
-                    longitude = record.getDouble("longitude");
-                    rating = record.getDouble("rating");
-
-                    key = String.format("%.3f", latitude) + "-" + String.format("%.3f", longitude) ;
-                    value = new Double[2];
-
-                    if (lowResTerrainDataMap.get(key) == null) {
-                        value[0] = 1.0;
-                        value[1] = rating;
-                        lowResTerrainDataMap.put(key, value);
-                    } else {
-                        value[0] = lowResTerrainDataMap.get(key)[0] + 1.0;
-                        value[1] = lowResTerrainDataMap.get(key)[1] + rating;
-                        lowResTerrainDataMap.put(key, value);
-                    }
-                }
-
-                for(HashMap.Entry<String, Double[]> entry : lowResTerrainDataMap.entrySet()) {
-                    key = entry.getKey();
-                    value = entry.getValue();
-
-                    latitude =  Double.parseDouble(key.split("-")[0].replace(",", "."));
-                    longitude =  Double.parseDouble(key.split("-")[1].replace(",", "."));
-                    int intRating = ((Double)(value[1] / value[0])).intValue();
-
-                    PolygonOptions polygonOptions = new PolygonOptions().
-                            geodesic(true).
-                            strokeWidth(polyWidth).
-                            fillColor(colorGradeList[intRating]).
-                            strokeColor(Color.rgb(255, 255, 255));
-
-                    polygonOptions.add(new LatLng(latitude + lowResMapOffset, longitude + lowResMapOffset),
-                                       new LatLng(latitude + lowResMapOffset, longitude - lowResMapOffset),
-                                       new LatLng(latitude - lowResMapOffset, longitude - lowResMapOffset),
-                                       new LatLng(latitude - lowResMapOffset, longitude + lowResMapOffset));
-
-                    mMap.addPolygon(polygonOptions);
-                }
-
-            // Mapa z najniższą rozdzielczością
-            } else {
-                HashMap<String, Double[]> lowResTerrainDataMap = new HashMap<String, Double[]>();
-                String key;
-                Double[] value;
-
-                Double latitude;
-                Double longitude;
-                Double rating;
-
-                for (int i = 0; i < terrainDataArray.length(); i++) {
-                    JSONObject record = terrainDataArray.getJSONObject(i);
-
-                    latitude = record.getDouble("latitude");
-                    longitude = record.getDouble("longitude");
-                    rating = record.getDouble("rating");
-
-                    key = String.format("%.2f", latitude) + "-" + String.format("%.2f", longitude) ;
-                    value = new Double[2];
-
-                    if (lowResTerrainDataMap.get(key) == null) {
-                        value[0] = 1.0;
-                        value[1] = rating;
-                        lowResTerrainDataMap.put(key, value);
-                    } else {
-                        value[0] = lowResTerrainDataMap.get(key)[0] + 1.0;
-                        value[1] = lowResTerrainDataMap.get(key)[1] + rating;
-                        lowResTerrainDataMap.put(key, value);
-                    }
-                }
-
-                for(HashMap.Entry<String, Double[]> entry : lowResTerrainDataMap.entrySet()) {
-                    key = entry.getKey();
-                    value = entry.getValue();
-
-                    latitude =  Double.parseDouble(key.split("-")[0].replace(",", "."));
-                    longitude =  Double.parseDouble(key.split("-")[1].replace(",", "."));
-                    int intRating = ((Double)(value[1] / value[0])).intValue();
-
-                    PolygonOptions polygonOptions = new PolygonOptions().
-                            geodesic(true).
-                            strokeWidth(polyWidth).
-                            fillColor(colorGradeList[intRating]).
-                            strokeColor(Color.rgb(255, 255, 255));
-
-                    polygonOptions.add(new LatLng(latitude + lowerResMapOffset, longitude + lowerResMapOffset),
-                            new LatLng(latitude + lowerResMapOffset, longitude - lowerResMapOffset),
-                            new LatLng(latitude - lowerResMapOffset, longitude - lowerResMapOffset),
-                            new LatLng(latitude - lowerResMapOffset, longitude + lowerResMapOffset));
-
-                    mMap.addPolygon(polygonOptions);
-                }
+                mMap.addPolygon(polygonOptions);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -309,15 +213,17 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
      * @param south - południowa krawędź mapy
      * @param east - wschodnia krawędź mapy
      * @param west - zachodnia krawędź mapy
+     * @param resolution - rozdzielczość z jaką pobierane są dane z mapy
      * @return - true jeżeli udało się pobrać nowe dane, false jeżeli nie
      */
-    private boolean getData(double north, double south, double east, double west){
+    private boolean getData(double north, double south, double east, double west, int resolution){
         try {
             String terrainDataString = new NetworkGetRating().execute(
                     Double.toString(north),
                     Double.toString(south),
                     Double.toString(east),
-                    Double.toString(west)
+                    Double.toString(west),
+                    Integer.toString(resolution)
             ).get();
 
             if (terrainDataString == null) {

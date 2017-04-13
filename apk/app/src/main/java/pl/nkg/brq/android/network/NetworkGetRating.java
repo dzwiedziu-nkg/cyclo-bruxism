@@ -25,13 +25,15 @@ public class NetworkGetRating extends AsyncTask<String, Void, String> {
             String south = urls[1];
             String east = urls[2];
             String west = urls[3];
+            String resolution = urls[4];
 
             URL url = new URL(ConstValues.BASE_URL +
                     "/mydatabase/getRating/" +
                     north + "/" +
                     south + "/" +
                     east + "/" +
-                    west + "/"
+                    west + "/" +
+                    resolution + "/"
             );
 
             URLConnection urlConnection =  url.openConnection();

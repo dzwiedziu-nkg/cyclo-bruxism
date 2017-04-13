@@ -155,59 +155,27 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
             JSONObject nextRecord = tripDataArray.getJSONObject(0);
             JSONObject currentRecord = nextRecord;
 
-            int entryCount = tripDataArray.length();
-            int drawingInterval = 1;
-            Double rating = 0.0;
-
-            if (entryCount < 1000){
-                drawingInterval = 1;
-            } else if (entryCount < 2000) {
-                drawingInterval = 2;
-            } else if (entryCount < 5000) {
-                drawingInterval = 5;
-            } else if (entryCount < 20000) {
-                drawingInterval = 10;
-            } else {
-                drawingInterval = 20;
-            }
-
             for (int i = 1; i < tripDataArray.length() - 1; i++) {
                 nextRecord = tripDataArray.getJSONObject(i);
-                rating += nextRecord.getDouble("rating");
 
-                // Linie rysowane są tylko w obliczonym interwale. Normalnie jest to 1 dla każdej wartości,
-                // ale przy dużej ilości danych interwał się zwiększa
-                if ((i % drawingInterval) == 0) {
-                    rating /= drawingInterval;
+                PolylineOptions polylineOptions = new PolylineOptions().
+                    geodesic(true)
+                    .width(polyWidth)
+                    .color(colorGradeList[((Double) currentRecord.getDouble("rating")).intValue()]);
 
-                    // Zabezpieczenie przed niepoprawnymi wartościami:
-                    if (rating < 1.0) {
-                        rating = 1.0;
-                    }
-                    if (rating > 10.0) {
-                        rating = 10.0;
-                    }
+                polylineOptions.add(new LatLng(
+                    currentRecord.getDouble("latitude"),
+                    currentRecord.getDouble("longitude")
+                ));
 
-                    PolylineOptions polylineOptions = new PolylineOptions().
-                        geodesic(true)
-                        .width(polyWidth)
-                        .color(colorGradeList[rating.intValue()]);
+                polylineOptions.add(new LatLng(
+                    nextRecord.getDouble("latitude"),
+                    nextRecord.getDouble("longitude")
+                ));
 
-                    polylineOptions.add(new LatLng(
-                        currentRecord.getDouble("latitude"),
-                        currentRecord.getDouble("longitude")
-                    ));
+                mMap.addPolyline(polylineOptions);
 
-                    polylineOptions.add(new LatLng(
-                        nextRecord.getDouble("latitude"),
-                        nextRecord.getDouble("longitude")
-                    ));
-
-                    mMap.addPolyline(polylineOptions);
-
-                    rating = 0.0;
-                    currentRecord = nextRecord;
-                }
+                currentRecord = nextRecord;
             }
         } catch (JSONException e) {
             e.printStackTrace();
