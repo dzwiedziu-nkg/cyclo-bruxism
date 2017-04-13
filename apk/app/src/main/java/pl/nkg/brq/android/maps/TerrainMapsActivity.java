@@ -26,8 +26,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import pl.nkg.brq.android.ConstValues;
@@ -44,9 +42,9 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     // Domyślne przybliżenie mapy ( mniejsza wartość to większe oddalenie mapy! )
     private static float cameraZoom = 17.0f;
     // Przybliżenie powyżeje którego mapa zmniejsza rozdzielczość i kumuluje dane w większe kwadraty
-    private static float cameraLowResZoom = 15.5f;
+    private static float cameraResThreeZoom = 15.5f;
     // Przybliżenie powyżeje którego mapa ponownie zmniejsza rozdzielczość
-    private static float cameraLowerResZoom = 12.5f;
+    private static float cameraResFiveZoom = 12.5f;
     // Przybliżenie powyżeje którego mapa przestanie ładować dane
     private static float cameraMinZoom = 10.0f;
     // Wyrażony procentowo obszar ekranu poza któym ładują się dane.
@@ -153,7 +151,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         int resolution;
         float offset;
 
-        Log.d("myApp", Double.toString(zoom));
+        // Sprawdzanie maksymalnego oddalenia
         if (zoom < cameraMinZoom) {
             mMap.clear();
             return;
@@ -167,10 +165,11 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         west += weOffset;
         east -= weOffset;
 
-        if (zoom > cameraLowResZoom) {
+        // Ustawienie opcji odpowiednich dla obecnego oddalenia mapy
+        if (zoom > cameraResThreeZoom) {
             resolution = 1;
             offset = resOneMapOffset;
-        } else if (zoom > cameraLowerResZoom) {
+        } else if (zoom > cameraResFiveZoom) {
             resolution = 3;
             offset = resThreeMapOffset;
         } else {
@@ -178,6 +177,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
             offset = resFiveMapOffset;
         }
 
+        // Pobranie danych z serwera
         if (!getData(north, south, east, west, resolution)){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
             return;
