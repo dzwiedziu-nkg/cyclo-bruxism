@@ -42,9 +42,10 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     // Domyślne przybliżenie mapy ( mniejsza wartość to większe oddalenie mapy! )
     private static float cameraZoom = 17.0f;
     // Przybliżenie powyżeje którego mapa zmniejsza rozdzielczość i kumuluje dane w większe kwadraty
-    private static float cameraResThreeZoom = 15.5f;
-    // Przybliżenie powyżeje którego mapa ponownie zmniejsza rozdzielczość
-    private static float cameraResFiveZoom = 12.5f;
+    private static float cameraResTwoZoom = 16.25f;
+    private static float cameraResThreeZoom = 15.0f;
+    private static float cameraResFourZoom = 13.5f;
+    private static float cameraResFiveZoom = 12.25f;
     // Przybliżenie powyżeje którego mapa przestanie ładować dane
     private static float cameraMinZoom = 10.0f;
     // Wyrażony procentowo obszar ekranu poza któym ładują się dane.
@@ -53,11 +54,11 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
 
     // Szerokość boków rysowanych kwadratów
     private static float polyWidth = 1.0f;
-    // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów
+    // Wartości wykorzystywane do obliczeń i wyśrodkowania kwadratów dla poszczególnych rozdzielczości
     private static float resOneMapOffset = 0.00005f;
-    // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów przy zmniejszonej rozdzielczości
+    private static float resTwoMapOffset = 0.00025f;
     private static float resThreeMapOffset = 0.0005f;
-    // Wartość wykorzystywana do obliczeń i wyśrodkowania kwadratów przy najmniejszej rozdzielczości
+    private static float resFourMapOffset = 0.0025f;
     private static float resFiveMapOffset = 0.005f;
 
     // Tablica z kolorami dla poszczególnych ocen
@@ -166,12 +167,18 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
         east -= weOffset;
 
         // Ustawienie opcji odpowiednich dla obecnego oddalenia mapy
-        if (zoom > cameraResThreeZoom) {
+        if (zoom > cameraResTwoZoom) {
             resolution = 1;
             offset = resOneMapOffset;
-        } else if (zoom > cameraResFiveZoom) {
+        } else if (zoom > cameraResThreeZoom) {
+            resolution = 2;
+            offset = resTwoMapOffset;
+        } else if (zoom > cameraResFourZoom) {
             resolution = 3;
             offset = resThreeMapOffset;
+        } else if (zoom > cameraResFiveZoom) {
+            resolution = 4;
+            offset = resFourMapOffset;
         } else {
             resolution = 5;
             offset = resFiveMapOffset;
@@ -188,6 +195,8 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
 
             for (int i = 0; i < terrainDataArray.length(); i++) {
                 JSONObject record = terrainDataArray.getJSONObject(i);
+
+                Log.d("myApp", Double.toString(record.getDouble("latitude")) + "-" +  Double.toString(record.getDouble("longitude")));
 
                 PolygonOptions polygonOptions = new PolygonOptions().
                         geodesic(true).

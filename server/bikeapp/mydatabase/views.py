@@ -299,14 +299,42 @@ def getRating(request, north, south, east, west, resolution):
 	ratingResponse = {}
 	ratingRecords = []
 
-	logging.warning(resolution)
-
 	if (resolution == '1'):
 		for rating in ratingObjects:
 			record = {
 				"latitude": rating.latitude,
 				"longitude": rating.longitude,
 				"rating": round((rating.rating / rating.count), 2)
+			}
+
+			ratingRecords.append(record)
+
+	if (resolution == '2'):
+		low_res_rating = {}
+
+		for rating in ratingObjects:
+			key = ''
+			value = [None] * 2
+
+			key = str(0.5 * round(2.0 * rating.latitude, 3)) + '-' + str(0.5 * round(2.0 * rating.longitude, 3))
+
+			if key in low_res_rating:
+				value[0] = low_res_rating[key][0] + 1.0
+				value[1] = low_res_rating[key][1] + round((rating.rating / rating.count), 2)
+				low_res_rating[key] = value
+			else:
+				value[0] = 1.0
+				value[1] = round((rating.rating / rating.count), 2)
+				low_res_rating[key] = value
+
+		for key, value in low_res_rating.items():
+			latitude = key.split('-')[0]
+			longitude = key.split('-')[1]
+
+			record = {
+				"latitude": latitude,
+				"longitude": longitude,
+				"rating": round((value[1] / value[0]), 2)
 			}
 
 			ratingRecords.append(record)
@@ -319,6 +347,36 @@ def getRating(request, north, south, east, west, resolution):
 			value = [None] * 2
 
 			key = str(round(rating.latitude, 3)) + '-' + str(round(rating.longitude, 3))
+
+			if key in low_res_rating:
+				value[0] = low_res_rating[key][0] + 1.0
+				value[1] = low_res_rating[key][1] + round((rating.rating / rating.count), 2)
+				low_res_rating[key] = value
+			else:
+				value[0] = 1.0
+				value[1] = round((rating.rating / rating.count), 2)
+				low_res_rating[key] = value
+
+		for key, value in low_res_rating.items():
+			latitude = key.split('-')[0]
+			longitude = key.split('-')[1]
+
+			record = {
+				"latitude": latitude,
+				"longitude": longitude,
+				"rating": round((value[1] / value[0]), 2)
+			}
+
+			ratingRecords.append(record)
+
+	if (resolution == '4'):
+		low_res_rating = {}
+
+		for rating in ratingObjects:
+			key = ''
+			value = [None] * 2
+
+			key = str(0.5 * round(2.0 * rating.latitude, 2)) + '-' + str(0.5 * round(2.0 * rating.longitude, 2))
 
 			if key in low_res_rating:
 				value[0] = low_res_rating[key][0] + 1.0
