@@ -51,12 +51,12 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
     }
 
     public String uploadTrip(JSONObject jsonObject,
-                                String userName,
-                                String fileName,
-                                String bikeType,
-                                String phonePlacement,
-                                String isPublic,
-                                String tripDate) {
+                             String userName,
+                             String fileName,
+                             String bikeType,
+                             String phonePlacement,
+                             String isPublic,
+                             String tripDate) {
 
         FileAccess fileAccess = new FileAccess();
         String response = "false";
@@ -79,6 +79,7 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
             // Wysyłanie obiektów JSON w odpowiednich kawałkach
             while (jsonArray.length() > 0) {
+
                 jsonArrayToSent = new JSONArray();
                 jsonArrayRest = new JSONArray();
 
@@ -120,6 +121,7 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
                 //zapisanie pliku na dysku w przypadku błędu przesyłania
                 if (!response.equals("true")) {
+                    Log.d("APP", "File saved locally...");
                     JSONObject jsonObjectToSave = new JSONObject().put("trip_data", jsonArray);
                     fileAccess.saveJSONFile(jsonObjectToSave, fileName, userName, bikeType, phonePlacement, isPublic, tripDate);
 
@@ -132,6 +134,7 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
             return response;
         } catch (java.net.SocketTimeoutException e) {
+            Log.d("APP", "Esception...");
             JSONObject jsonObjectToSave = null;
             try {
                 jsonObjectToSave = new JSONObject().put("trip_data", jsonArrayRest);
@@ -142,6 +145,7 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
 
             return "false_timeout";
         } catch (Exception e) {
+            Log.d("APP", "Esception...");
             JSONObject jsonObjectToSave = null;
             try {
                 jsonObjectToSave = new JSONObject().put("trip_data", jsonArrayRest);

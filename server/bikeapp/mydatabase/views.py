@@ -7,9 +7,11 @@ from django.core.files.base import ContentFile
 from django.core.files import File
 
 import json
+import time
 import math
 import logging
 import os
+from django.db import transaction
 
 from .models import User
 from .models import Trip
@@ -40,6 +42,7 @@ def register(request, userName, password):
 # 'false_invalid_form' jeżeli załącznik nie jest poprawny
 # 'false_post' jeżeli nie połączono się z użyciem metody "POST"
 @csrf_exempt 
+@transaction.atomic
 def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic, tripDate):
 	if request.method == 'POST':
 
@@ -130,9 +133,7 @@ def saveTrip(request, userName, name, bikeType, phonePlacement, isPublic, tripDa
 				newTrip.save()
 
 			return HttpResponse('true')
-
 		return HttpResponse('false_invalid_form')
-
 	return HttpResponse('false_post')
 
 # Zwraca ocenę z zakresu 1-10. 1 to najlepsza, 10 najgorsza
@@ -174,7 +175,6 @@ def saveRating(latitude, longitude, rating):
 		ratingObject.save()
 	except Rating.DoesNotExist:
 		Rating.objects.create(latitude=round(latitude, 4), longitude=round(longitude, 4), rating=rating, count = 1)
-
 	return
 
 # Zwraca listę podróży z bazy danych.
