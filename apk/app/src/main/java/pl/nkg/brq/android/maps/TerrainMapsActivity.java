@@ -42,10 +42,10 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     // Domyślne przybliżenie mapy ( mniejsza wartość to większe oddalenie mapy! )
     private static float cameraZoom = 17.0f;
     // Przybliżenie powyżeje którego mapa zmniejsza rozdzielczość i kumuluje dane w większe kwadraty
-    private static float cameraResTwoZoom = 16.25f;
-    private static float cameraResThreeZoom = 15.0f;
-    private static float cameraResFourZoom = 13.5f;
-    private static float cameraResFiveZoom = 12.25f;
+    private static float cameraResTwoZoom = 16.5f;
+    private static float cameraResThreeZoom = 15.25f;
+    private static float cameraResFourZoom = 13.75f;
+    private static float cameraResFiveZoom = 12.0f;
     // Przybliżenie powyżeje którego mapa przestanie ładować dane
     private static float cameraMinZoom = 10.0f;
     // Wyrażony procentowo obszar ekranu poza któym ładują się dane.
@@ -195,8 +195,6 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
 
             for (int i = 0; i < terrainDataArray.length(); i++) {
                 JSONObject record = terrainDataArray.getJSONObject(i);
-
-                Log.d("myApp", Double.toString(record.getDouble("latitude")) + "-" +  Double.toString(record.getDouble("longitude")));
 
                 PolygonOptions polygonOptions = new PolygonOptions().
                         geodesic(true).
