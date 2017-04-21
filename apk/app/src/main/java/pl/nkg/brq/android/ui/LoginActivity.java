@@ -2,9 +2,12 @@ package pl.nkg.brq.android.ui;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -77,6 +80,15 @@ public class LoginActivity extends AppCompatActivity {
 
         if ( password.equals("") ) {
             Toast.makeText(getApplicationContext(), R.string.enter_password_hint_toast,Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Sprawdzamy czy jest połaczenie internetowe
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+            Toast.makeText(getApplicationContext(), R.string.no_internet_toast, Toast.LENGTH_LONG).show();
             return;
         }
 

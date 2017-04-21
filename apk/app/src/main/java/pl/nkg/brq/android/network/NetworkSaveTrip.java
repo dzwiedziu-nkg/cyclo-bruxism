@@ -129,7 +129,6 @@ public class NetworkSaveTrip extends AsyncTask<Object, Void, String> {
                 }
 
                 jsonArray = jsonArrayRest;
-                Log.d("APP", "JSONArrayKoniec: " + Integer.toString(jsonArray.length()));
             }
 
             return response;

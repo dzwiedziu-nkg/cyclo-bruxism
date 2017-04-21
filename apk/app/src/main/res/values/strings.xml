@@ -80,6 +80,7 @@
     <string name="timeout_exception_toast">Unable to connect with server...</string>
     <string name="upload_success_toast">Upload successful!</string>
     <string name="network_problems_toast">Internet problems...</string>
+    <string name="no_internet_toast">No internet connection...</string>
 
     <string name="file_saved_locally_toast">File saved locally...</string>
     <string name="backlog_file_sent_toast">Backlog file sent!</string>

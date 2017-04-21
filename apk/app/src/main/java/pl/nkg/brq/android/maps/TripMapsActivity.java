@@ -1,10 +1,14 @@
 package pl.nkg.brq.android.maps;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
@@ -80,6 +84,14 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+            Toast.makeText(getApplicationContext(), R.string.no_internet_toast, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         try {
             String tripId = intent.getExtras().getString("tripId");
 
@@ -92,15 +104,17 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
             tripDataArray = tripDataObject.getJSONArray("trip_data");
             tripBikeUsed = tripResponseJson.getString("bike_used");
             tripPhonePlacement = tripResponseJson.getString("phone_placement");
+
+            drawTrip();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        drawTrip();
     }
 
     /**

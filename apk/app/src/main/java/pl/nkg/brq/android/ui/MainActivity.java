@@ -384,6 +384,16 @@ public class MainActivity extends AppCompatActivity {
      * @param mode - jakie dane wyświetlić na liście - tylko moje lub wszystkie udostępnione przez użytkowników
      */
     public void selectTripDialog(String mode){
+        // Pobieramy info o dostępnych połaczeniach
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+        // Sprawdzamy czy jest połaczenie internetowe
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+            Toast.makeText(getApplicationContext(), R.string.no_internet_toast, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         final Dialog tripSelectDialog = new Dialog(this);
         tripSelectDialog.setContentView(R.layout.select_trip_dialog);
         tripSelectDialog.setTitle(R.string.title_dialog_select);

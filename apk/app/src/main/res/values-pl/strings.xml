@@ -80,6 +80,7 @@
     <string name="timeout_exception_toast">Brak połączenia z serwerem...</string>
     <string name="upload_success_toast">Wysłano dane!</string>
     <string name="network_problems_toast">Problem z internetem...</string>
+    <string name="no_internet_toast">Brak połączenia z internetem...</string>
 
     <string name="file_saved_locally_toast">Dane zapisane lokalnie...</string>
     <string name="backlog_file_sent_toast">Wysłano lokalne dane!</string>

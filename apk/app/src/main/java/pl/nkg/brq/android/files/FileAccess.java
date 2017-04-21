@@ -45,7 +45,7 @@ public class FileAccess {
         }
 
         try {
-            FileOutputStream fOut = new FileOutputStream(file, true);
+            FileOutputStream fOut = new FileOutputStream(file, false);
             OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
             osw.write(jsonObject.toString());
