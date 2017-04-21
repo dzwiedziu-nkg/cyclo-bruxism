@@ -40,7 +40,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
     private JSONArray terrainDataArray;
 
     // Domyślne przybliżenie mapy ( mniejsza wartość to większe oddalenie mapy! )
-    private static float cameraZoom = 17.0f;
+    private float cameraZoom = 17.0f;
     // Przybliżenie powyżeje którego mapa zmniejsza rozdzielczość i kumuluje dane w większe kwadraty
     private static float cameraResTwoZoom = 16.5f;
     private static float cameraResThreeZoom = 15.25f;
@@ -114,6 +114,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Domyślne położenie mapy (Kraków), jeżeli nie ma pozwolenia na używanie GPS
             startPosition =  new LatLng(50.0847, 19.9596);
+            cameraZoom = 10.0f;
         } else {
             Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
             if (location != null){
@@ -123,6 +124,7 @@ public class TerrainMapsActivity extends FragmentActivity implements OnMapReadyC
                 // Domyślne położenie mapy przy braku lokalizacji użytkownika (Kraków),
                 // jeżeli nie udało się pobrać aktualnego położenia użytkownika
                 startPosition =  new LatLng(50.0847, 19.9596);
+                cameraZoom = 10.0f;
             }
         }
 
