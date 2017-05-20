@@ -185,8 +185,8 @@ def listTrip(request, userName, mode):
 	if (not userCheck):
 		return JsonResponse({})
 
-	trip_response = {}
-	trip_records = []
+	tripResponse = {}
+	tripRecords = []
 		
 	if (mode == 'userOnly'):
 		tripList = Trip.objects.filter(
@@ -208,7 +208,7 @@ def listTrip(request, userName, mode):
 
 	# Niepoprawny mode, zwracamy pusty obiekt JSON
 	else: 
-		return JsonResponse(trip_response)
+		return JsonResponse(tripResponse)
 
 	for trip in tripList:
 		record = {
@@ -216,11 +216,11 @@ def listTrip(request, userName, mode):
 			"name": trip.name
 		}
 
-		trip_records.append(record)
+		tripRecords.append(record)
 
-	trip_response["array"] = trip_records
+	tripResponse["array"] = tripRecords
 
-	return JsonResponse(trip_response)
+	return JsonResponse(tripResponse)
 
 # Zwraca podróż o podanym id
 # Przy dużej ilości wpisów dane są skracane i wysyłane są tylko niektóre wpisy z uśrednioną oceną
