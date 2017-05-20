@@ -28,7 +28,7 @@
 
     <string name="name_text">"Nazwa: "</string>
     <string name="speed_text">"Prędkość: "</string>
-    <string name="altitude_text">"Wysokość n.p.m.: "</string>
+    <string name="altitude_text">"Wysokość: "</string>
     <string name="acceleration_text">"Przyspieszenie: "</string>
     <string name="noise_text">"Hałas: "</string>
     <string name="distance_text">"Odległość: "</string>
@@ -61,11 +61,14 @@
     <!-- Trip selection dialog -->
     <string name="title_dialog_select">Wybierz wycieczkę: </string>
     <string name="button_dialog_select">Wybierz</string>
-    <string name="nothing_to_show_warning">Nic do wyświetlenia!</string>
+    <string name="nothing_to_show_warning">Nie ma nic do wyświetlenia!</string>
 
     <!-- Maps  -->
     <string name="title_activity_trip_map">Mapa wycieczki</string>
     <string name="title_activity_terrain_map">Mapa terenu</string>
+
+    <string name="trip_map_bike_text">Rower: </string>
+    <string name="trip_map_place_text">, telefon: </string>
 
     <!-- Toasts  -->
     <string name="enter_user_name_hint_toast">Podaj nazwę użytkownika!</string>

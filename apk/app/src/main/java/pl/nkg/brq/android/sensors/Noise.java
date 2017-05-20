@@ -70,6 +70,5 @@ public class Noise extends QueriedSensor {
             return (mRecorder.getMaxAmplitude());
         else
             return 0;
-
     }
 }

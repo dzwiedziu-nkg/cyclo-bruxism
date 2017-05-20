@@ -67,6 +67,9 @@
     <string name="title_activity_trip_map">Trip map</string>
     <string name="title_activity_terrain_map">Terrain map</string>
 
+    <string name="trip_map_bike_text">Bike: </string>
+    <string name="trip_map_place_text">, place: </string>
+
     <!-- Toasts  -->
     <string name="enter_user_name_hint_toast">Enter your user name!</string>
     <string name="enter_password_hint_toast">Enter your password!</string>

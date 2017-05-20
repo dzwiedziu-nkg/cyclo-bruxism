@@ -1,7 +1,7 @@
 from django.db import models
 
 class User(models.Model):
-	user_name = models.CharField(max_length=40)
+	user_name = models.CharField(max_length=40, unique=True)
 	password = models.CharField(max_length=40)
 
 	def __str__(self):
@@ -27,8 +27,8 @@ class Rating(models.Model):
 	latitude = models.FloatField()
 	longitude = models.FloatField()
 
-	rating = models.FloatField()
-	count = models.IntegerField()
+	ratings_sum = models.FloatField()
+	ratings_count = models.IntegerField()
 
 	def __str__(self):
 		return str(self.latitude) + ' - ' + str(self.longitude)

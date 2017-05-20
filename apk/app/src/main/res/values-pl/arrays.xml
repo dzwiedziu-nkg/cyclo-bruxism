@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="connection_array_entries">
-        <item>Tylko wifi</item>
+        <item>Tylko Wi-Fi</item>
         <item>Internet</item>
     </string-array>
 

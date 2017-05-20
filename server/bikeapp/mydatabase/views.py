@@ -21,7 +21,7 @@ from .forms import DocumentForm
 def index(request):
 	return HttpResponse("Hello world")
 
-# Logowanie. Zwraca 'true' jeżeli użytkownik i chasło zgadzają się, 'false' jeżeli nie
+# Logowanie. Zwraca 'true' jeżeli użytkownik i hasło zgadzają się, 'false' jeżeli nie
 def login(request, userName, password):
 	try:
 		User.objects.get(user_name=userName, password=password)
@@ -170,11 +170,11 @@ def ratingCalculation(soundNoise, shake):
 def saveRating(latitude, longitude, rating):
 	try:
 		ratingObject = Rating.objects.get(latitude=round(latitude, 4), longitude=round(longitude, 4))
-		ratingObject.rating += rating
-		ratingObject.count += 1
+		ratingObject.ratings_sum += rating
+		ratingObject.ratings_count += 1
 		ratingObject.save()
 	except Rating.DoesNotExist:
-		Rating.objects.create(latitude=round(latitude, 4), longitude=round(longitude, 4), rating=rating, count = 1)
+		Rating.objects.create(latitude=round(latitude, 4), longitude=round(longitude, 4), ratings_sum=rating, ratings_count = 1)
 	return
 
 # Zwraca listę podróży z bazy danych.
@@ -231,18 +231,18 @@ def getTrip(request, id):
 
 	if (tripObject):
 		file = tripObject.trip_data
-		trip_data_lines = str(file.read(), "utf-8")
+		tripDataLines = str(file.read(), "utf-8")
 
-		trip_data_parsed = json.loads(trip_data_lines.replace("\'", '"'))
-		trip_data_array = trip_data_parsed["trip_data"]
+		tripDataParsed = json.loads(tripDataLines.replace("\'", '"'))
+		tripDataArray = tripDataParsed["trip_data"]
 
-		entryCount = len(trip_data_array)
+		entryCount = len(tripDataArray)
 		drawingInterval = 1
 		counter = 0
-		rating_sum = 0.0
+		ratingSum = 0.0
 
-		trip_data_short = {}
-		trip_array_short_records = []
+		tripDataShort = {}
+		tripArrayShortRecords = []
 
 		# Dopasowanie rozdzielczości do ilości wpisów
 		if (entryCount < 1000):
@@ -257,37 +257,37 @@ def getTrip(request, id):
 			drawingInterval = 20
 
 		# Przygotowanie odpowiednich danych do wysłania
-		for record in trip_data_array:
+		for record in tripDataArray:
 			counter += 1
-			rating_sum += record["rating"]
+			ratingSum += record["rating"]
 
 			if (counter % drawingInterval == 0):
-				rating_final = round(rating_sum / drawingInterval, 1)
+				ratingFinal = round(ratingSum / drawingInterval, 1)
 
 				# Zabezpieczenie przed niepoprawnymi wartościami ratingu:
-				if (rating_final < 1.0):
-					rating_final = 1.0
-				if (rating_final > 10.0):
-					rating_final = 10.0
+				if (ratingFinal < 1.0):
+					ratingFinal = 1.0
+				if (ratingFinal > 10.0):
+					ratingFinal = 10.0
 
-				record_final = {
+				recordFinal = {
 					"latitude": record["latitude"],
 					"longitude": record["longitude"],
-					"rating": rating_final
+					"rating": ratingFinal
 				}
 
-				trip_array_short_records.append(record_final)
+				tripArrayShortRecords.append(recordFinal)
 
 				counter = 0
-				rating_sum = 0.0
+				ratingSum = 0.0
 
 		# Zwrócenie skróconej tablicy z recordami
-		trip_data_short["trip_data"] = trip_array_short_records
+		tripDataShort["trip_data"] = tripArrayShortRecords
 		tripResponse = {
 			"name": tripObject.name,
 			"bike_used": tripObject.bike_used,
 			"phone_placement": tripObject.phone_placement,
-			"trip_data": trip_data_short
+			"trip_data": tripDataShort
 		}
 
 	return JsonResponse(tripResponse)
@@ -304,7 +304,7 @@ def getRating(request, north, south, east, west, resolution):
 			record = {
 				"latitude": rating.latitude,
 				"longitude": rating.longitude,
-				"rating": round((rating.rating / rating.count), 2)
+				"rating": round((rating.ratings_sum / rating.ratings_count), 2)
 			}
 
 			ratingRecords.append(record)
@@ -320,11 +320,11 @@ def getRating(request, north, south, east, west, resolution):
 
 			if key in low_res_rating:
 				value[0] = low_res_rating[key][0] + 1.0
-				value[1] = low_res_rating[key][1] + round((rating.rating / rating.count), 2)
+				value[1] = low_res_rating[key][1] + round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 			else:
 				value[0] = 1.0
-				value[1] = round((rating.rating / rating.count), 2)
+				value[1] = round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 
 		for key, value in low_res_rating.items():
@@ -350,11 +350,11 @@ def getRating(request, north, south, east, west, resolution):
 
 			if key in low_res_rating:
 				value[0] = low_res_rating[key][0] + 1.0
-				value[1] = low_res_rating[key][1] + round((rating.rating / rating.count), 2)
+				value[1] = low_res_rating[key][1] + round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 			else:
 				value[0] = 1.0
-				value[1] = round((rating.rating / rating.count), 2)
+				value[1] = round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 
 		for key, value in low_res_rating.items():
@@ -380,11 +380,11 @@ def getRating(request, north, south, east, west, resolution):
 
 			if key in low_res_rating:
 				value[0] = low_res_rating[key][0] + 1.0
-				value[1] = low_res_rating[key][1] + round((rating.rating / rating.count), 2)
+				value[1] = low_res_rating[key][1] + round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 			else:
 				value[0] = 1.0
-				value[1] = round((rating.rating / rating.count), 2)
+				value[1] = round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 
 		for key, value in low_res_rating.items():
@@ -410,11 +410,11 @@ def getRating(request, north, south, east, west, resolution):
 
 			if key in low_res_rating:
 				value[0] = low_res_rating[key][0] + 1.0
-				value[1] = low_res_rating[key][1] + round((rating.rating / rating.count), 2)
+				value[1] = low_res_rating[key][1] + round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 			else:
 				value[0] = 1.0
-				value[1] = round((rating.rating / rating.count), 2)
+				value[1] = round((rating.ratings_sum / rating.ratings_count), 2)
 				low_res_rating[key] = value
 
 		for key, value in low_res_rating.items():

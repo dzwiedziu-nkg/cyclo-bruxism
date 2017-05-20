@@ -7,16 +7,22 @@ import android.graphics.Color;
  */
 
 public class ConstValues {
+    // Adres serwera z którym łączy się aplikacja
     //public static final String BASE_URL = "https://bike-app-server.herokuapp.com";
-    public static final String BASE_URL = "http://192.168.1.103:8000";
+    public static final String BASE_URL = "http://192.168.1.10:8000";
+
+    // Timeout połączeń z serwerem
     public static final int CONNECTION_TIMEOUT = 20000;
-    public static final int DATA_CHUNK_SIZE = 300;
+    // Ilość pomiarów które są wysyłane w jednym pakiecie
+    public static final int DATA_CHUNK_SIZE = 1000;
+
+    // Przy false nie wysyłamy danych na serwer
+    public static final boolean DATA_SENDING_ACTIVE = true;
+    // Przy true zapisujemy nawet podróże w których nic się nie zapisało. Do celów testowych
+    public static final boolean SAVE_EMPTY_DATA = false;
 
     public static final String MODE_USER_ONLY = "userOnly";
     public static final String MODE_ALL_USERS = "allUsers";
-
-    public static final boolean DATA_SENDING_ACTIVE = true;
-    public static final boolean SAVE_EMPTY_DATA = false;
 
     public static final String API_KEY = "AIzaSyBZGDRVjIgsqDaxBhkOCXkNCoLWNYEPw78";
     public static final String DIRECTORY_NAME = "RoadTester";

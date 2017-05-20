@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /*
-    Metoda wywoływana po kliknięciu w przycisk "sign in".
+    Metoda wywoływana po kliknięciu w przycisk "zaloguj się".
     Sprawdza poprawność nazwy użytkownika i hasła i przechodzi do właściwej aplikacji.
      */
     public void onLogin(View view) throws IOException, InterruptedException, ExecutionException {
@@ -97,7 +97,7 @@ public class LoginActivity extends AppCompatActivity {
         // lub niemożliwości połączenia z internetem
         try {
             String response =  new NetworkAccessLogin().execute(userName, password).get();
-            if ( response.equals("true") ) {
+            if (response.equals("true")){
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(getString(R.string.pref_user_logged_key), userName);
                 editor.commit();
@@ -170,6 +170,15 @@ public class LoginActivity extends AppCompatActivity {
         registerButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Sprawdzamy czy jest połaczenie internetowe
+                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+                if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+                    Toast.makeText(getApplicationContext(), R.string.no_internet_toast, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 String newUserName = ((EditText)myDialog.findViewById(R.id.username_register)).getText().toString();
                 String newUserPassword = ((EditText)myDialog.findViewById(R.id.password_register)).getText().toString();
                 String newUserPasswordRepeat = ((EditText)myDialog.findViewById(R.id.password_register_repeat)).getText().toString();

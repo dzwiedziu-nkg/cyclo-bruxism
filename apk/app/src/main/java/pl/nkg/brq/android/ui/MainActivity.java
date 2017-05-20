@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
             mAltitudeTextView.setVisibility(View.VISIBLE);
             mShakeTextView.setVisibility(View.VISIBLE);
             mNoiseTextView.setVisibility(View.VISIBLE);
-            mDistanceTextView.setVisibility(View.VISIBLE);
+            //mDistanceTextView.setVisibility(View.VISIBLE);
 
             nameEditText.setVisibility(View.GONE);
         } else {
@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
             mAltitudeTextView.setVisibility(View.GONE);
             mShakeTextView.setVisibility(View.GONE);
             mNoiseTextView.setVisibility(View.GONE);
-            mDistanceTextView.setVisibility(View.GONE);
+           // mDistanceTextView.setVisibility(View.GONE);
 
             nameEditText.setVisibility(View.VISIBLE);
         }

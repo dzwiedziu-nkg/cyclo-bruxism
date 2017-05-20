@@ -148,7 +148,7 @@ public class TripMapsActivity extends FragmentActivity implements OnMapReadyCall
             mMap.addMarker(new MarkerOptions()
                     .position(startPosition)
                     .title("Start")
-                    .snippet("Bike: " + bikeText + ", place: " + placementText)).showInfoWindow();
+                    .snippet(getString(R.string.trip_map_bike_text) + bikeText + getString(R.string.trip_map_place_text) + placementText)).showInfoWindow();
 
             endPosition = new LatLng(
                     tripDataArray.getJSONObject(tripDataArray.length() - 1).getDouble("latitude"),
