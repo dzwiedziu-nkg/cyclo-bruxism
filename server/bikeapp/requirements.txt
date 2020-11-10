@@ -3,4 +3,4 @@ packaging==16.8
 pyparsing==2.2.0
 six==1.10.0
 Django==1.10.6
-gunicorn==19.4.5
+gunicorn==19.5.0
