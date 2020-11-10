@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import pl.nkg.brq.android.ConstValues;
 import pl.nkg.brq.android.R;
 
 /**
@@ -26,10 +27,13 @@ public class NetworkAccessLogin extends AsyncTask<String, Void, String> {
             String userName = urls[0];
             String password = urls[1];
 
-            URL url = new URL("http://192.168.0.14:8000/mydatabase/login/"
+            URL url = new URL(ConstValues.BASE_URL + "/mydatabase/login/"
                     + userName + "/"
                     + password);
+
             URLConnection urlConnection =  url.openConnection();
+            urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
+            urlConnection.setReadTimeout(ConstValues.CONNECTION_TIMEOUT);
 
             InputStream in = urlConnection.getInputStream();
             String encoding = urlConnection.getContentEncoding();

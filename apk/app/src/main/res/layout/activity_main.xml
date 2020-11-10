@@ -16,9 +16,9 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/button_on"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/button_on"
             style="@style/Theme.Design.Light"
             android:background="@drawable/main_button"
             android:layout_marginLeft="8dp"
@@ -26,68 +26,88 @@
             android:layout_marginBottom="16dp"
             android:text="@string/button_on_text" />
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/button_off"
-            style="@style/Theme.Design.Light"
-            android:background="@drawable/main_button"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/button_off_text"
-            android:visibility="gone"/>
-
     </LinearLayout>
 
+    <EditText
+        android:id="@+id/trip_name_edit"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/main_edit_text"
+        android:textCursorDrawable="@null"
+        android:padding="6dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:hint="@string/trip_name_hint"
+        android:focusable = "true" />
+
     <TextView
+        android:id="@+id/trip_name_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/sharing_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/bike_type_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/phone_placement_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/bike_type_info" />
-
+        android:layout_marginBottom="14dp"/>
 
     <TextView
+        android:id="@+id/speedTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/altitudeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/shakeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/noiseTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/distanceTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/phone_placement_info" />
+        android:visibility="gone"/>
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/speedTextView" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/altitudeTextView" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/shakeTextView" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/noiseTextView" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/distanceTextView" />
-
-    <TextView
+        android:id="@+id/warningTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:textColor="#ff0000"
-        android:id="@+id/warningTextView" />
+        android:textColor="#ff0000"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TEST"
+        android:onClick="testButton"
+        android:visibility="gone"/>
 
 </LinearLayout>

@@ -1,0 +1,100 @@
+<resources>
+    <!-- Main -->
+    <string name="app_name">Road Quality Tester</string>
+
+    <!-- Login Activity -->
+    <string name="login_button">Zaloguj się</string>
+    <string name="register_button">Zarejestruj się</string>
+    <string name="register_button_done">Ok</string>
+
+    <string name="username_edit_hint">Login</string>
+    <string name="password_edit_hint">Hasło</string>
+
+    <string name="registration_dialog_title">Dane rejestracji</string>
+    <string name="username_register_hint">Nazwa uzytkownika</string>
+    <string name="password_register_hint">Hasło</string>
+    <string name="password_register_repeat_hint">Powtórz hasło</string>
+    <string name="user_register_password_warning">Hasła się nie zgadzają</string>
+
+    <!-- Main Activity  -->
+    <string name="button_on_text">Zacznij pomiar!</string>
+    <string name="button_off_text">Zakończ pomiar!</string>
+
+    <string name="trip_name_hint">Nazwa...</string>
+    <string name="sharing_yes_info">"Ta wycieczka będzie publicznie dostępna!"</string>
+    <string name="sharing_no_info">"Ta wycieczka będzie prywatna!"</string>
+    <string name="bike_type_info">"Rodzaj rowera: "</string>
+    <string name="placement_info">"Położenie telefonu: "</string>
+
+    <string name="name_text">"Nazwa: "</string>
+    <string name="speed_text">"Prędkość: "</string>
+    <string name="altitude_text">"Wysokość: "</string>
+    <string name="acceleration_text">"Przyspieszenie: "</string>
+    <string name="noise_text">"Hałas: "</string>
+    <string name="distance_text">"Odległość: "</string>
+
+    <!-- Action Bar  -->
+    <string name="action_selecet_trip">Wybierz podróż</string>
+    <string name="action_selecet_trip_user_only">Wybierz swoją podróż</string>
+    <string name="action_selecet_terrain">Mapa terenu</string>
+    <string name="action_settings">Ustawienia</string>
+    <string name="action_quit">Wyjdź</string>
+    <string name="action_logout">Wyloguj się i wyjdź</string>
+
+    <!-- Settings  -->
+    <string name="settings_activity_detail">Ustawienia</string>
+
+    <string name="pref_connection_title">Połączenie internetowe</string>
+    <string name="pref_connection_key">connection_type</string>
+    <string name="pref_connection_def">wifi</string>
+
+    <string name="pref_bike_title">Rodzaj rowera</string>
+    <string name="pref_bike_key">bike_type</string>
+
+    <string name="pref_placement_title">Położenie telefonu</string>
+    <string name="pref_placement_key">placement_type</string>
+
+    <string name="pref_sharing_title">Udostępnianie</string>
+    <string name="pref_sharing_key">public_availability</string>
+    <string name="pref_sharing_summary">Zaznacz jeśli chcesz dzielić się swoimi podróżami z innymi!</string>
+
+    <!-- Trip selection dialog -->
+    <string name="title_dialog_select">Wybierz wycieczkę: </string>
+    <string name="button_dialog_select">Wybierz</string>
+    <string name="nothing_to_show_warning">Nie ma nic do wyświetlenia!</string>
+
+    <!-- Maps  -->
+    <string name="title_activity_trip_map">Mapa wycieczki</string>
+    <string name="title_activity_terrain_map">Mapa terenu</string>
+
+    <string name="trip_map_bike_text">Rower: </string>
+    <string name="trip_map_place_text">, telefon: </string>
+
+    <!-- Toasts  -->
+    <string name="enter_user_name_hint_toast">Podaj nazwę użytkownika!</string>
+    <string name="enter_password_hint_toast">Podaj hasło!</string>
+    <string name="registration_repeat_failure_toast">Musisz powtórzyć hasło!</string>
+    <string name="registration_failure_already_used_toast">Nazwa użytkownika w użyciu!</string>
+    <string name="registartion_success_toast">Rejestracja udana!</string>
+    <string name="wrong_password_toast">Złe hasło. Spróbuj jeszcze raz!</string>
+
+    <string name="service_start_toast">Pomiar rozpoczęty!</string>
+
+    <string name="timeout_exception_toast">Brak połączenia z serwerem...</string>
+    <string name="upload_success_toast">Wysłano dane!</string>
+    <string name="network_problems_toast">Problem z internetem...</string>
+    <string name="no_internet_toast">Brak połączenia z internetem...</string>
+
+    <string name="file_saved_locally_toast">Dane zapisane lokalnie...</string>
+    <string name="backlog_file_sent_toast">Wysłano lokalne dane!</string>
+    <string name="nothing_to_send_toast">Nie ma nic do wysłania!</string>
+    <string name="local_data_upload_toast">Wysyłanie lokalnych danych...</string>
+
+    <!-- Preferences keys -->
+    <string name="pref_user_logged_key">pref_user_login</string>
+    <string name="trip_name_key">trip_name</string>
+    <string name="trip_array_key">tripArray</string>
+    <string name="trip_bike_key">tripPhone</string>
+    <string name="trip_phone_key">tripBike</string>
+
+</resources>

@@ -1,10 +1,17 @@
 package pl.nkg.brq.android.ui;
 
+import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,6 +20,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -28,7 +36,8 @@ import pl.nkg.brq.android.network.NetworkAccessRegister;
 
 public class LoginActivity extends AppCompatActivity {
 
-    final static protected String userLoggedInPreference = "pref_user_login";
+    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 801;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 802;
 
     EditText userNameEditText;
     EditText passwordEditText;
@@ -37,6 +46,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText passwordRegisterEditText;
     EditText passwordRepeatRegisterEditText;
     Button registerButton;
+    TextView warningTextView;
 
     SharedPreferences sharedPreferences;
 
@@ -47,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        if ( !sharedPreferences.getString(userLoggedInPreference, "").equals("") ) {
+        if ( !sharedPreferences.getString(getString(R.string.pref_user_logged_key), "").equals("") ) {
             startMainActivity();
         }
 
@@ -56,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /*
-    Metoda wywoływana po kliknięciu w przycisk "sign in".
+    Metoda wywoływana po kliknięciu w przycisk "zaloguj się".
     Sprawdza poprawność nazwy użytkownika i hasła i przechodzi do właściwej aplikacji.
      */
     public void onLogin(View view) throws IOException, InterruptedException, ExecutionException {
@@ -64,34 +74,41 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
 
         if ( userName.equals("") ) {
-            Toast.makeText(getApplicationContext(), R.string.enter_user_name_hint,Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.enter_user_name_hint_toast,Toast.LENGTH_LONG).show();
             return;
         }
 
         if ( password.equals("") ) {
-            Toast.makeText(getApplicationContext(), R.string.enter_password_hint,Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.enter_password_hint_toast,Toast.LENGTH_LONG).show();
             return;
         }
 
-        //domyslne chaslo bez dostepu do internetu
-        if ( userName.equals("ad") && password.equals("ad") ) {
-            startMainActivity();
+        // Sprawdzamy czy jest połaczenie internetowe
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+            Toast.makeText(getApplicationContext(), R.string.no_internet_toast, Toast.LENGTH_LONG).show();
             return;
         }
 
+        // Wysyłamy na serwer zapytanie o poprawność loginu i hasła
+        // Na ekranie wyświetlane jest odpowiednie powiadomienie w przypadku niepoprawnego hasła
+        // lub niemożliwości połączenia z internetem
         try {
             String response =  new NetworkAccessLogin().execute(userName, password).get();
-            if ( response.equals("true") ) {
+            if (response.equals("true")){
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(userLoggedInPreference, userName);
+                editor.putString(getString(R.string.pref_user_logged_key), userName);
                 editor.commit();
 
                 startMainActivity();
             } else if (response.equals("false")){
-                Toast.makeText(getApplicationContext(), getString(R.string.wrong_password), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.wrong_password_toast), Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
+            Log.d("myApp", e.toString());
         }
     }
 
@@ -99,10 +116,9 @@ public class LoginActivity extends AppCompatActivity {
     Metoda wywołująca formularz do rejestracji nowego użytkownika. Obsługuje interfejs oraz listenery odpowiednich elementów.
      */
     public void onRegister(View view){
-        //TODO prawdziwa rejestracja
-
         final Dialog myDialog = new Dialog(this);
         myDialog.setContentView(R.layout.register_form);
+        myDialog.setTitle(R.string.registration_dialog_title);
 
         myDialog.show();
 
@@ -148,28 +164,35 @@ public class LoginActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {}
         });
 
-        registerButton = (Button)myDialog.findViewById(R.id.button_register_done);
+        registerButton = (Button) myDialog.findViewById(R.id.button_register_done);
+        warningTextView = (TextView) myDialog.findViewById(R.id.repeat_password_warning);
         registerButton.setEnabled(false);
         registerButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Sprawdzamy czy jest połaczenie internetowe
+                ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+                if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+                    Toast.makeText(getApplicationContext(), R.string.no_internet_toast, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 String newUserName = ((EditText)myDialog.findViewById(R.id.username_register)).getText().toString();
                 String newUserPassword = ((EditText)myDialog.findViewById(R.id.password_register)).getText().toString();
                 String newUserPasswordRepeat = ((EditText)myDialog.findViewById(R.id.password_register_repeat)).getText().toString();
                 Toast registerToast;
 
                 if ( newUserPassword.equals(newUserPasswordRepeat) ) {
-                    registerToast = Toast.makeText(getApplicationContext(),
-                            getString(R.string.register_success),
-                            Toast.LENGTH_SHORT);
                     sendRegisterInfo(newUserName, newUserPassword);
                 } else {
                     registerToast = Toast.makeText(getApplicationContext(),
-                            getString(R.string.register_repeat_failure),
+                            getString(R.string.registration_repeat_failure_toast),
                             Toast.LENGTH_SHORT);
+                    registerToast.show();
                 }
 
-                registerToast.show();
                 myDialog.dismiss();
             }
         });
@@ -181,10 +204,19 @@ public class LoginActivity extends AppCompatActivity {
     public void checkRegisterButton(){
         if( userNameRegisterEditText.getText().toString().equals("") ||
             passwordRegisterEditText.getText().toString().equals("") ||
-            passwordRepeatRegisterEditText.getText().toString().equals("") ) {
+            passwordRepeatRegisterEditText.getText().toString().equals("") ||
+            !passwordRegisterEditText.getText().toString().equals(passwordRepeatRegisterEditText.getText().toString()) ) {
             registerButton.setEnabled(false);
         } else {
             registerButton.setEnabled(true);
+        }
+
+        if (!passwordRegisterEditText.getText().toString().equals(passwordRepeatRegisterEditText.getText().toString()) &&
+            !userNameRegisterEditText.getText().toString().equals("") &&
+            !passwordRegisterEditText.getText().toString().equals("") ) {
+            warningTextView.setVisibility(View.VISIBLE);
+        } else {
+            warningTextView.setVisibility(View.GONE);
         }
     }
 
@@ -198,10 +230,11 @@ public class LoginActivity extends AppCompatActivity {
             if ( response.equals("true") ) {
                 Toast.makeText(getApplicationContext(), R.string.registartion_success_toast, Toast.LENGTH_SHORT).show();
             } else if (response.equals("false")){
-                Toast.makeText(getApplicationContext(), R.string.registration_failure_toast, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.registration_failure_already_used_toast, Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e){
             Toast.makeText(getApplicationContext(), R.string.network_problems_toast, Toast.LENGTH_SHORT).show();
+            Log.d("myApp", e.toString());
         }
     }
 

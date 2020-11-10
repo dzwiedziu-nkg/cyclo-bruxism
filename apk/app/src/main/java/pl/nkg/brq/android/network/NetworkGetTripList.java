@@ -14,18 +14,19 @@ import pl.nkg.brq.android.ConstValues;
  * Created by aaa on 2016-12-06.
  */
 
-public class NetworkAccessRegister extends AsyncTask<String, Void, String> {
+public class NetworkGetTripList extends AsyncTask<String, Void, String> {
 
     private Exception exception;
 
     protected String doInBackground(String... urls) {
         try {
             String userName = urls[0];
-            String password = urls[1];
+            String mode = urls[1];
 
-            URL url = new URL(ConstValues.BASE_URL + "/mydatabase/register/"
+            URL url = new URL(ConstValues.BASE_URL + "/mydatabase/listTrip/"
                     + userName + "/"
-                    + password);
+                    + mode);
+
             URLConnection urlConnection =  url.openConnection();
             urlConnection.setConnectTimeout(ConstValues.CONNECTION_TIMEOUT);
             urlConnection.setReadTimeout(ConstValues.CONNECTION_TIMEOUT);

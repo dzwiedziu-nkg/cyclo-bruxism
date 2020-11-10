@@ -6,6 +6,7 @@
     <ListPreference
         android:title="@string/pref_connection_title"
         android:key="@string/pref_connection_key"
+        android:summary="%s"
         android:defaultValue="@string/pref_connection_def"
         android:entries="@array/connection_array_entries"
         android:entryValues="@array/connection_array_values"/>
@@ -13,14 +14,23 @@
     <ListPreference
         android:title="@string/pref_bike_title"
         android:key="@string/pref_bike_key"
-        android:defaultValue="@string/pref_bike_def"
+        android:summary="%s"
+        android:defaultValue="road_bike"
         android:entries="@array/bike_array_entries"
         android:entryValues="@array/bike_array_values"/>
 
     <ListPreference
         android:title="@string/pref_placement_title"
         android:key="@string/pref_placement_key"
-        android:defaultValue="@string/pref_placement_def"
+        android:summary="%s"
+        android:defaultValue="pocket"
         android:entries="@array/placement_array_entries"
         android:entryValues="@array/placement_array_values"/>
+
+    <CheckBoxPreference
+        android:title="@string/pref_sharing_title"
+        android:key="@string/pref_sharing_key"
+        android:summary="@string/pref_sharing_summary"
+        android:defaultValue="true"
+        />
 </PreferenceScreen>
